@@ -1,0 +1,218 @@
+CREATE DATABASE DVLD_COPY;
+
+USE DVLD_COPY
+
+CREATE TABLE Countries
+(
+	CoutryID INT PRIMARY KEY IDENTITY(1,1),
+	CountryName NVARCHAR(max) not null
+);
+
+CREATE TABLE People
+(
+	PersonID INT PRIMARY KEY IDENTITY(1,1),
+	NationalNo NVARCHAR(50) not null,
+	FirstName NVARCHAR(100) not null,
+	SecondName NVARCHAR(100) not null,
+	ThirdName NVARCHAR(100) null,
+	LastName NVARCHAR(100) not null,
+	DateOfBirth DATETIME not null,
+	Gender NVARCHAR(10) not null,
+	Address NVARCHAR(max) null,
+	Phone NVARCHAR(20) not null,
+	Email NVARCHAR(50) null,
+	NationalityCountryID INT not null,
+	ImagePath NVARCHAR(max) null,
+
+	CONSTRAINT FK_PERSONCOUNTRY FOREIGN KEY(NationalityCountryID) REFERENCES Countries(CoutryID)
+);
+
+CREATE TABLE Users
+(
+	UserID INT PRIMARY KEY IDENTITY(1,1),
+	PersonID INT NOT NULL,
+	UserName NVARCHAR(20) not null,
+	Password NVARCHAR(20) not null,
+	IsActive BIT not null,
+
+	CONSTRAINT FK_PERSONID FOREIGN KEY(PersonID) REFERENCES People(PersonID)
+);
+
+CREATE TABLE ApplicationsStatus
+(
+	StatusID INT PRIMARY KEY IDENTITY(1,1),
+	StatusName NVARCHAR(50) NOT NULL
+);
+
+
+CREATE TABLE ApplicationTyps
+(
+	ApplicationTypeID INT PRIMARY KEY IDENTITY(1,1),
+	ApplicationTypeTitle NVARCHAR(MAX) NOT NULL,
+	ApplicationFees SMALLMONEY NOT NULL
+)
+
+CREATE TABLE Applications
+(
+	ApplicationID INT PRIMARY KEY IDENTITY(1,1),
+	ApplicantPersonID INT NOT NULL,
+	ApplicationDate DATETIME NOT NULL,
+	ApplicationTypeID INT NOT NULL,
+	ApplicationStatus INT NOT NULL,
+	LastStatusDate DATETIME NOT NULL,
+	PaidFees SMALLMONEY NOT NULL,
+	CreatedByUserID INT NOT NULL
+
+	CONSTRAINT FK_PERSONAPPLICATION FOREIGN KEY(ApplicantPersonID) REFERENCES People(PersonID),
+	
+	CONSTRAINT FK_APPLICATIONTYPE FOREIGN KEY(ApplicationTypeID) REFERENCES ApplicationTyps(ApplicationTypeID),
+	
+	CONSTRAINT FK_APPLICATIONSTATUS FOREIGN KEY(ApplicationStatus) REFERENCES ApplicationsStatus(StatusID)
+);
+
+
+CREATE TABLE LicenseClasses
+(
+	LicenseClassID INT PRIMARY KEY IDENTITY(1,1),
+	ClassName NVARCHAR(50) NOT NULL,
+	ClassDescription NVARCHAR(MAX) NOT NULL,
+	MinimumAllowedAge TINYINT NOT NULL,
+	DefaultValidityLength TINYINT NOT NULL,
+	ClassFees SMALLMONEY NOT NULL
+);
+
+CREATE TABLE LocalDrivingLicenseApplications
+(
+	LocalDrivingLicenseApplicationID INT PRIMARY KEY IDENTITY(1,1),
+	ApplicationID INT NOT NULL,
+	LicenseClassID INT NOT NULL,
+
+	CONSTRAINT FK_LICENSECLASS FOREIGN KEY(LicenseClassID) REFERENCES LicenseClasses(LicenseClassID),
+	
+	CONSTRAINT FK_MAINAPPLICAIONT FOREIGN KEY(ApplicationID) REFERENCES Applications(ApplicationID)
+);
+
+
+CREATE TABLE TestTypes
+(
+	TestTypeID INT PRIMARY KEY IDENTITY(1,1),
+	TestTypeTitle NVARCHAR(100) NOT NULL,
+	TestTypeDescription NVARCHAR(MAX) NOT NULL,
+	TestTypeFees SMALLMONEY NOT NULL
+);
+
+CREATE TABLE TestAppointments
+(
+	TestAppointmentID INT PRIMARY KEY IDENTITY(1,1),
+	TestTypeID INT NOT NULL,
+	LocalDrivingLicenseApplicationID INT NOT NULL,
+	AppointmentDate DATETIME NOT NULL,
+	PaidFees SMALLMONEY NOT NULL,
+	CreatedByUserID INT NOT NULL,
+	IsLocked BIT NOT NULL,
+
+	CONSTRAINT FK_TESTTYPE FOREIGN KEY(TestTypeID) REFERENCES TestTypes(TestTypeID),
+	
+	CONSTRAINT FK_USERID FOREIGN KEY(CreatedByUserID) REFERENCES Users(UserID),
+	
+	CONSTRAINT FK_LOCALDRIGINLICENSEAPPLICATION FOREIGN KEY(LocalDrivingLicenseApplicationID) REFERENCES LocalDrivingLicenseApplications(LocalDrivingLicenseApplicationID)
+);
+
+
+CREATE TABLE Tests
+(
+	TestID INT PRIMARY KEY IDENTITY(1,1),
+	TestAppointmentID INT NOT NULL,
+	TestResult BIT NOT NULL,
+	Notes NVARCHAR(MAX) NULL,
+	CreatedByUserID INT NOT NULL,
+
+	CONSTRAINT FK_TESTAPPOINTMENT FOREIGN KEY(TestAppointmentID) REFERENCES TestAppointments(TestAppointmentID)
+);
+
+CREATE TABLE Drivers
+(
+	DriverID INT PRIMARY KEY IDENTITY(1,1),
+	PersonID INT NOT NULL,
+	CreatedByUserID INT NOT NULL,
+	CreatedDate DATETIME NOT NULL,
+
+	CONSTRAINT FK_PERSONIDD FOREIGN KEY(PersonID) REFERENCES People(PersonID),
+	
+	CONSTRAINT FK_USERIDD FOREIGN KEY(CreatedByUserID) REFERENCES Users(UserID)
+);
+
+CREATE TABLE Licenses
+(
+	LicenseID INT PRIMARY KEY IDENTITY(1,1),
+	ApplicationID INT NOT NULL,
+	DriverID INT NOT NULL,
+	LicenseClass INT NOT NULL,
+	IssueDate DATETIME NOT NULL,
+	ExpirationDate DATETIME NOT NULL,
+	Notes NVARCHAR(MAX) NOT NULL,
+	PaidFees SMALLMONEY NOT NULL,
+	IsActive BIT NOT NULL,
+	IssueReason TINYINT NOT NULL,
+	CreatedByUserID INT NOT NULL,
+
+	CONSTRAINT FK_APPLICATIONID FOREIGN KEY(ApplicationID) REFERENCES Applications(ApplicationID),
+	
+	CONSTRAINT FK_DIRVERID FOREIGN KEY(DriverID) REFERENCES Drivers(DriverID),
+	
+	CONSTRAINT FK_LICENSECLASSID FOREIGN KEY(LicenseClass) REFERENCES LicenseClasses(LicenseClassID),
+	
+	CONSTRAINT FK_USERIDDD FOREIGN KEY(CreatedByUserID) REFERENCES Users(UserID)
+);
+
+CREATE TABLE DetainedLicenses
+(
+	DetainID INT PRIMARY KEY IDENTITY(1,1),
+	LicenseID INT NOT NULL,
+	DetainDate DATETIME NOT NULL,
+	FineFees SMALLMONEY NOT NULL,
+	CreatedByUserID INT NOT NULL,
+	IsReleased BIT NOT NULL,
+	ReleaseDate DATETIME NULL,
+	ReleasedByUserID INT NULL,
+	ReleaseApplicationID INT NULL,
+
+	CONSTRAINT FK_R_USERID FOREIGN KEY(ReleasedByUserID) REFERENCES Users(UserID),
+	
+	CONSTRAINT FK_C_USERID FOREIGN KEY(CreatedByUserID) REFERENCES Users(UserID),
+	
+	CONSTRAINT FK_LICENSEID FOREIGN KEY(LicenseID) REFERENCES Licenses(LicenseID),
+	
+	CONSTRAINT FK_RELEASEAPPLICATION FOREIGN KEY(ReleaseApplicationID) REFERENCES Applications(ApplicationID)
+);
+
+
+ALTER TABLE TestAppointments
+ADD RetakeTestApplicationID INT NULL
+
+ALTER TABLE TestAppointments
+ADD CONSTRAINT FK_RETAKETESTAPPLICATIONID FOREIGN KEY(RetakeTestApplicationID) REFERENCES Applications(ApplicationID) 
+
+
+CREATE TABLE InternationalLicenses
+(
+	InternationalLicenseID INT PRIMARY KEY IDENTITY(1,1),
+	ApplicationID INT NOT NULL,
+	DriverID INT NOT NULL,
+	IssuedUsingLocalLicenseID INT NOT NULL,
+	IssueDate DATETIME NOT NULL,
+	ExpirationDate DATETIME NOT NULL,
+	IsActive BIT NOT NULL,
+	CreatedByUserID INT NOT NULL,
+
+	CONSTRAINT FK_APPLICATIONIDD FOREIGN KEY(ApplicationID) REFERENCES Applications(ApplicationID),
+	
+	CONSTRAINT FK_DRIVERID FOREIGN KEY(DriverID) REFERENCES Drivers(DriverID),
+	
+	CONSTRAINT FK_LOCALDRIVINGLICENSEID FOREIGN KEY(IssuedUsingLocalLicenseID) REFERENCES LocalDrivingLicenseApplications(LocalDrivingLicenseApplicationID),
+
+	CONSTRAINT FK_CREATEDBYUSERID FOREIGN KEY(CreatedByUserID) REFERENCES Users(UserID)
+);
+
+
+BACKUP DATABASE Movies TO DISK = 'C:/';
