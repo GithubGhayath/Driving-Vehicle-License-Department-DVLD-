@@ -1,0 +1,43 @@
+using DVLDDataAccessLayar;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Security;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DVLDBusinessLayar
+{
+    public class clsApplicationStatusBusinessLayar
+    {
+        public byte StatusID { get; set; }
+        public string StatusName { get; set; }  
+
+        public clsApplicationStatusBusinessLayar()
+        {
+            StatusID = 0;
+            StatusName = string.Empty;
+        }
+        private clsApplicationStatusBusinessLayar(byte statusid,string statusName)
+        {
+            this.StatusName=statusName;
+            this.StatusID = statusid;   
+        }
+
+        static public clsApplicationStatusBusinessLayar Find(byte StatusID)
+        {
+            string StatusName=string.Empty;
+
+            if (clsApplicationStatusDataAccessLayar.Find(StatusID, ref StatusName)) 
+                return new clsApplicationStatusBusinessLayar(StatusID, StatusName);
+            else
+                return null;
+        }
+
+        static public DataTable GetAllStatus()
+        {
+            return clsApplicationStatusDataAccessLayar.GetAllStatus();
+        }
+    }
+}

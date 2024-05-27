@@ -1,0 +1,191 @@
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using DVLDataAccessLayar;
+
+namespace DVLDBusinessLayar
+{
+    public class clsPeopleBusinessLayar
+    {
+        enum _enMode { AddNew, Update };
+        private _enMode Mode { get; set; }
+        public int PersonID { get; set; }
+        public string NationalNo { get; set; }
+        public string FirstName { get; set; }
+        public string SecondName { get; set; }
+        public string ThirdName { get; set; }
+        public string LastName { get; set; }
+        public DateTime DateOfBirth { get; set; }
+        public string Gendor { get; set; }
+        public string Address { get; set; }
+        public string Phone { get; set; }
+        public string Email { get; set; }
+        public int NationalityCountryID { get; set; }
+        public string ImagePath { get; set; }
+
+        public clsCountriesBusinessLayar Country;
+       
+        private clsPeopleBusinessLayar(int PersonID, string NationalNo, string FirstName,
+            string SecondName, string ThirdName, string LastName, DateTime DateOfBirth, string Gendor,
+            string Address, string Phone, string Email, int NationalityCountryID, string ImagePath)
+        {
+            this.PersonID = PersonID;
+            this.NationalNo = NationalNo;
+            this.FirstName = FirstName;
+            this.SecondName = SecondName;
+            this.ThirdName = ThirdName;
+            this.LastName = LastName;
+            this.DateOfBirth = DateOfBirth;
+            this.Gendor = Gendor;
+            this.Address = Address;
+            this.Phone = Phone;
+            this.Email = Email;
+            this.NationalityCountryID = NationalityCountryID;
+            this.ImagePath = ImagePath;
+            this.Country = clsCountriesBusinessLayar.Find(NationalityCountryID);
+
+            this.Mode = _enMode.Update;
+
+        }
+        public clsPeopleBusinessLayar()
+        {
+            this.PersonID = 0;
+            this.NationalNo = string.Empty;
+            this.FirstName = string.Empty;
+            this.SecondName = string.Empty;
+            this.ThirdName = string.Empty;
+            this.LastName = string.Empty;
+            this.DateOfBirth = DateTime.Now;
+            this.Gendor = string.Empty;
+            this.Address = string.Empty;
+            this.Phone = string.Empty;
+            this.Email = string.Empty;
+            this.NationalityCountryID = 0;
+            this.ImagePath = string.Empty;
+
+            this.Mode = _enMode.AddNew;
+        }
+
+        static public clsPeopleBusinessLayar Find(int PersonID)
+        {
+           
+            string NationalNo = string.Empty;
+            string FirstName = string.Empty;
+            string SecondName = string.Empty;
+            string ThirdName = string.Empty;
+            string LastName = string.Empty;
+            DateTime DateOfBirth = DateTime.Now;
+            string Gendor = string.Empty;
+            string Address = string.Empty;
+            string Phone = string.Empty; 
+            string Email = string.Empty; 
+            int NationalityCountryID = 0;
+            string ImagePath= string.Empty;
+
+            if (clsPeopleDataAccessLayar.Find(PersonID, ref NationalNo, ref FirstName, ref SecondName
+                , ref ThirdName, ref LastName, ref DateOfBirth, ref Gendor, ref Address, ref Phone,
+                ref Email, ref NationalityCountryID, ref ImagePath))
+            {
+                return new clsPeopleBusinessLayar(PersonID, NationalNo, FirstName, SecondName, ThirdName, LastName
+                    , DateOfBirth, Gendor, Address, Phone, Email, NationalityCountryID, ImagePath);
+            }
+            else
+            {
+                return null;
+            }
+        }
+        static public clsPeopleBusinessLayar Find(string NationalNo)
+        {
+            int PersonID = 0;
+            string FirstName = string.Empty;
+            string SecondName = string.Empty;
+            string ThirdName = string.Empty;
+            string LastName = string.Empty;
+            DateTime DateOfBirth = DateTime.Now;
+            string Gendor = string.Empty;
+            string Address = string.Empty;
+            string Phone = string.Empty;
+            string Email = string.Empty;
+            int NationalityCountryID = 0;
+            string ImagePath = string.Empty;
+            if (clsPeopleDataAccessLayar.FindByNationalNo(ref PersonID, NationalNo, ref FirstName, ref SecondName, ref ThirdName, ref LastName, ref DateOfBirth,
+                ref Gendor, ref Address, ref Phone, ref Email, ref NationalityCountryID, ref ImagePath))
+                return new clsPeopleBusinessLayar(PersonID, NationalNo, FirstName, SecondName, ThirdName, LastName, DateOfBirth, Gendor, Address, Phone, Email, NationalityCountryID, ImagePath);
+            else
+                return null;
+        }
+        static public DataTable GetAllPeople()
+        {
+            return clsPeopleDataAccessLayar.GetAllPeople();
+        }
+
+        public string GetFillName()
+        {
+            string FillName = FirstName + " " + SecondName;
+            if(ThirdName != string.Empty||ThirdName!=null)
+            {
+                FillName += " " + ThirdName;
+            }
+
+            FillName += " " + LastName;
+            return FillName;
+        }
+
+        private bool _AddNewPerson()
+        {
+            int PersonID = 0;
+            if (clsPeopleDataAccessLayar.AddNewPerson(ref PersonID, this.NationalNo, this.FirstName, this.SecondName, this.ThirdName, this.LastName, this.DateOfBirth
+                , this.Gendor, this.Address, this.Phone, this.Email, this.NationalityCountryID, this.ImagePath))
+            {
+                this.PersonID = PersonID;
+                return true;
+            }  
+            else
+                return false;
+        }
+
+        static public bool DeletePerson(int personID)
+        {
+            return clsPeopleDataAccessLayar.DeletePerson(personID);
+        }
+
+        private bool _Update()
+        {
+            if (clsPeopleDataAccessLayar.UpdatePerson(this.PersonID, this.NationalNo, this.FirstName, this.SecondName, this.ThirdName, this.LastName,
+                this.DateOfBirth, this.Gendor, this.Address, this.Phone, this.Email, this.NationalityCountryID, this.ImagePath))
+                return true;
+            else 
+                return false;
+        }
+
+        static public bool IsExists(int PersonID)
+        {
+            return clsPeopleDataAccessLayar.IsExists(PersonID);
+        }
+        public bool Save()
+        {
+            switch (this.Mode)
+            {
+                case _enMode.AddNew:
+                    if (_AddNewPerson())
+                    {
+                        this.Mode = _enMode.Update;
+                        return true;
+                    }
+                    else
+                        return false;
+
+                case _enMode.Update:
+                    if (_Update())
+                        return true;
+                    else
+                        return false;
+
+            }
+            return false;
+        }
+    }
+}

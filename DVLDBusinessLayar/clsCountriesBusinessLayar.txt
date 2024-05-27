@@ -1,0 +1,48 @@
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Threading.Tasks;
+using DVLDDataAccessLayar;
+
+namespace DVLDBusinessLayar
+{
+    public class clsCountriesBusinessLayar
+    {
+        public int CountryID { get; }
+        public string CountryName { get; }
+        private clsCountriesBusinessLayar(int countryid,string countryname)
+        {
+            this.CountryName = countryname;
+            this.CountryID = countryid;
+        }
+        static public DataTable GetAllCountries()
+        {
+            return clsCountriesDataAccessLayar.GetAllCountries();
+        }
+
+        static public clsCountriesBusinessLayar Find(int CountryID)
+        {
+            string CountryName = string.Empty;
+            if(clsCountriesDataAccessLayar.Find(CountryID,ref CountryName))
+            {
+                return new clsCountriesBusinessLayar(CountryID,CountryName);
+            }
+            else
+                return null;
+        }
+
+        static public clsCountriesBusinessLayar Find(string CountryName)
+        {
+            int CountryID = 0;
+            if (clsCountriesDataAccessLayar.Find(CountryName, ref CountryID))
+                return new clsCountriesBusinessLayar(CountryID, CountryName);
+            else
+                return null;
+        }
+
+      
+    }
+}

@@ -1,0 +1,65 @@
+using DVLDDataAccessLayar;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DVLDBusinessLayar
+{
+    public class clsTestsBusinessLayar
+    {
+
+        //For Retrive Data
+       public int TestID { get; set; }
+       public int TestAppointmentID { get; set; }
+       public bool TestResult { get; set; }
+       public string Notes { get; set; }
+       public int CreatedByUserID { get; set; }
+
+        public static bool IsPersonPassedTest(int LocalDrivingLicense,int TestType)
+        {
+            return clsTestsDataAccessLayar.IsPersonPassedTest(LocalDrivingLicense, TestType);
+        }
+        private clsTestsBusinessLayar(
+                                        int TestID,
+                                        int TestAppointmentID,
+                                        bool TestResult,
+                                        string Notes,
+                                        int CreatedByUserID)
+        {
+            this.TestID = TestID;
+            this.TestAppointmentID = TestAppointmentID;
+            this.TestResult = TestResult;
+            this.Notes = Notes;
+            this.CreatedByUserID = CreatedByUserID;
+        }
+
+        static public clsTestsBusinessLayar Find(int AppointmentID)
+        {
+            int TestID = 0;
+            bool TestResult = false;
+            string Notes = string.Empty;
+            int CreatedByUserID = 0;
+
+            if (clsTestsDataAccessLayar.Find(AppointmentID, ref TestID, ref TestResult, ref Notes, ref CreatedByUserID))
+                return new clsTestsBusinessLayar(TestID, AppointmentID, TestResult, Notes, CreatedByUserID);
+            else
+                return null;
+        }
+
+        static public (bool,int) InsertNewTestRecord(
+                                        int TestAppointmentID,
+                                        bool TestResult,
+                                        string Notes,
+                                        int CreatedByUserID)
+        {
+            int TestID = clsTestsDataAccessLayar.InsertTestRecord(TestAppointmentID, TestResult, Notes, CreatedByUserID);
+            if (TestID > 0)
+                return (true, TestID);
+            else
+                return (false, 0);
+        }
+    }
+}

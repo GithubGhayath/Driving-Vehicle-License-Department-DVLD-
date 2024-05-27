@@ -1,0 +1,131 @@
+using DVLDDataAccessLayar;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DVLDBusinessLayar
+{
+    public class clsTestAppointmentsBusinessLayar
+    {
+        enum _enMode {AddNew,Update}
+        private _enMode _Mode { get; set; }
+       public int TestTypeID { get; set; }
+       public int LocalDrivingLicenseApplicationID { get; set; }
+        public DateTime AppointmentDate { get; set; }
+        public decimal PaidFees { get; set; }
+        public int CreatedByUserID { get; set; }
+        public bool IsLocked { get; set; }
+
+        public int AppoitmentID { get; set; }
+
+        static public bool IsAppointmentActive(int AppointmentID)
+        {
+            return clsTestAppoitmentsDataAccessLayar.IsAppointmentActive(AppointmentID);
+        }
+
+        static public DataTable GetAllAppointments(int LocalDrivingLicenseApplicationID,int TestTypeID)
+        {
+            return clsTestAppoitmentsDataAccessLayar.GetAllAppointments(LocalDrivingLicenseApplicationID, TestTypeID);
+        }
+
+        public clsTestAppointmentsBusinessLayar()
+        {
+            this.AppoitmentID = 0;
+            this.TestTypeID = 0;
+            this.LocalDrivingLicenseApplicationID = 0;
+            this.AppointmentDate = DateTime.Now;
+            this.IsLocked = false;
+            this.PaidFees = .0m;
+            this.CreatedByUserID = 0;
+
+            _Mode = _enMode.AddNew;
+        }
+
+        private clsTestAppointmentsBusinessLayar(int AppoitmentID,int TestTypeID, int LocalDrivingLicenseApplicationID, DateTime AppointmentDate, decimal PaidFees, int CreatedByUserID, bool IsLocked)
+        {
+            this.AppoitmentID = AppoitmentID;
+            this.TestTypeID = TestTypeID;
+            this.LocalDrivingLicenseApplicationID = LocalDrivingLicenseApplicationID;
+            this.AppointmentDate = AppointmentDate;
+            this.IsLocked = IsLocked;
+            this.PaidFees = PaidFees;
+            this.CreatedByUserID = CreatedByUserID;
+
+            _Mode = _enMode.Update;
+        }
+
+
+        static public clsTestAppointmentsBusinessLayar Find(int AppoitmentID)
+        {
+            int TestTypeID = 0;
+            int LocalDrivingLicenseApplicationID = 0;
+            DateTime AppointmentDate = DateTime.Now;
+            bool IsLocked = false;
+            decimal PaidFees = 0m;
+            int CreatedByUserID = 1;
+
+            if (clsTestAppoitmentsDataAccessLayar.Find(AppoitmentID, ref TestTypeID, ref LocalDrivingLicenseApplicationID, ref AppointmentDate, ref PaidFees, ref CreatedByUserID, ref IsLocked))
+                return new clsTestAppointmentsBusinessLayar(AppoitmentID, TestTypeID, LocalDrivingLicenseApplicationID, AppointmentDate, PaidFees, CreatedByUserID, IsLocked);
+            else
+                return null;
+        }
+
+        private bool _AddNewAppoitment()
+        {
+            int AppoitmentID=clsTestAppoitmentsDataAccessLayar.AddNewAppoitment(this.TestTypeID,this.LocalDrivingLicenseApplicationID,this.AppointmentDate,this.PaidFees,this.CreatedByUserID,this.IsLocked);
+
+            if (AppoitmentID > 0)
+            {
+                this.AppoitmentID = AppoitmentID;
+                return true;
+            }
+            else
+                return false;
+        }
+
+        private bool _UpdateAppoitment()
+        {
+            if(clsTestAppoitmentsDataAccessLayar.Update(this.AppoitmentID,this.TestTypeID,this.LocalDrivingLicenseApplicationID,this.AppointmentDate,this.PaidFees,this.CreatedByUserID,this.IsLocked)>0)
+            {
+                return true;
+            }
+            else
+                return false;
+        }
+
+        static public bool Delete(int AppoitmentID)
+        {
+            return clsTestAppoitmentsDataAccessLayar.Delete(AppoitmentID);  
+        }
+
+        public bool Save()
+        {
+            switch (this._Mode)
+            {
+                case _enMode.AddNew:
+                    if(_AddNewAppoitment())
+                    {
+                        this._Mode = _enMode.Update;
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                    case _enMode.Update:
+                    if (_UpdateAppoitment())
+                    {
+                        return true;
+                    }
+                    else
+                        return false;
+            }
+            return false;
+
+        }
+
+    }
+}

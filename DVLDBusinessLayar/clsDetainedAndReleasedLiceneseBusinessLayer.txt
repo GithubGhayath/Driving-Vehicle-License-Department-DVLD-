@@ -1,0 +1,169 @@
+using DVLDDataAccessLayar;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DVLDBusinessLayar
+{
+    public class clsDetainedAndReleasedLiceneseBusinessLayer
+    {
+        //Add New : Detained License
+        //Update : Released License
+
+        enum enMode { AddNew, Update }
+
+        private enMode _Mode { get; set; }
+
+        public int DetainID { get; set; }
+        public int LicenseID { get; set; }
+        public DateTime DetainDate { get; set; }
+        public decimal FineFees { get; set; }
+        public int CreatedByUserID { get; set; }
+        public bool IsReleased { get; set; }
+        public DateTime ReleaseDate { get; set; }
+        public int ReleasedByUserID { get; set; }
+        public int ReleaseApplicationID { get; set; }
+
+        static public DataTable GetAllDetained()
+        {
+            return clsDetainedAndReleaseLicenseDataAccessLayer.GetAllDetained();
+        }
+        public clsDetainedAndReleasedLiceneseBusinessLayer()
+        {
+            this.DetainID = 0;
+            this.LicenseID = 0;
+            this.DetainDate = DateTime.Now;
+            this.FineFees = .0m;
+            this.CreatedByUserID = 0;
+            this.IsReleased = false;
+            this.ReleaseDate = DateTime.Now;
+            this.ReleasedByUserID = 0;
+            this.ReleaseApplicationID = 0;
+
+            this._Mode = enMode.AddNew;
+        }
+
+        private clsDetainedAndReleasedLiceneseBusinessLayer(int detainID, int licenseID, DateTime detainDate, decimal fineFees, int createdByUserID, bool isReleased, DateTime releaseDate, int releasedByUserID, int releaseApplicationID)
+        {
+            this.DetainID = detainID;
+            this.LicenseID = licenseID;
+            this.DetainDate = detainDate;
+            this.FineFees = fineFees;
+            this.CreatedByUserID = createdByUserID;
+            this.IsReleased = isReleased;
+            this.ReleaseDate = releaseDate;
+            this.ReleasedByUserID = releasedByUserID;
+            this.ReleaseApplicationID = releaseApplicationID;
+
+            this._Mode = enMode.Update;
+        }
+
+
+        static public clsDetainedAndReleasedLiceneseBusinessLayer Find(int DetainID)
+        {
+            int LicenseID = 0;
+            DateTime DetainDate = DateTime.MinValue;
+            decimal FineFees = .0m;
+            int CreatedByUserID = 0;
+            bool IsReleased = false;
+            DateTime ReleaseDate = DateTime.Now;
+            int ReleasedByUserID = 0;
+            int ReleaseApplicationID = 0;
+
+            if (clsDetainedAndReleaseLicenseDataAccessLayer.Find(DetainID, ref LicenseID, ref DetainDate, ref FineFees, ref CreatedByUserID, ref IsReleased, ref ReleaseDate, ref ReleasedByUserID, ref ReleaseApplicationID))
+                return new clsDetainedAndReleasedLiceneseBusinessLayer(DetainID, LicenseID, DetainDate, FineFees, CreatedByUserID, IsReleased, ReleaseDate, ReleasedByUserID, ReleaseApplicationID);
+            else
+                return null;
+        }
+
+
+        static public clsDetainedAndReleasedLiceneseBusinessLayer FindByReleaseApplicationID(int ReleaseApplicationID)
+        {
+            int DetainID = 0;
+            int LicenseID = 0;
+            DateTime DetainDate = DateTime.MinValue;
+            decimal FineFees = .0m;
+            int CreatedByUserID = 0;
+            bool IsReleased = false;
+            DateTime ReleaseDate = DateTime.Now;
+            int ReleasedByUserID = 0;
+           
+
+            if (clsDetainedAndReleaseLicenseDataAccessLayer.Find(ref DetainID, ref LicenseID, ref DetainDate, ref FineFees, ref CreatedByUserID, ref IsReleased, ref ReleaseDate, ref ReleasedByUserID, ReleaseApplicationID))
+                return new clsDetainedAndReleasedLiceneseBusinessLayer(DetainID, LicenseID, DetainDate, FineFees, CreatedByUserID, IsReleased, ReleaseDate, ReleasedByUserID, ReleaseApplicationID);
+            else
+                return null;
+        }
+        static public clsDetainedAndReleasedLiceneseBusinessLayer FindByLicenseID(int LicenseID)
+        {
+            int DetainID = 0;
+            DateTime DetainDate = DateTime.MinValue;
+            decimal FineFees = .0m;
+            int CreatedByUserID = 0;
+            bool IsReleased = false;
+            DateTime ReleaseDate = DateTime.Now;
+            int ReleasedByUserID = 0;
+            int ReleaseApplicationID = 0;
+
+
+            if (clsDetainedAndReleaseLicenseDataAccessLayer.Find(ref DetainID, LicenseID, ref DetainDate, ref FineFees, ref CreatedByUserID, ref IsReleased, ref ReleaseDate, ref ReleasedByUserID,ref ReleaseApplicationID))
+                return new clsDetainedAndReleasedLiceneseBusinessLayer(DetainID, LicenseID, DetainDate, FineFees, CreatedByUserID, IsReleased, ReleaseDate, ReleasedByUserID, ReleaseApplicationID);
+            else
+                return null;
+        }
+
+        private bool _DetainedLicense()
+        {
+            int DetainedID = clsDetainedAndReleaseLicenseDataAccessLayer.DetainLicense(this.LicenseID, this.DetainDate, this.FineFees, this.CreatedByUserID, this.IsReleased);
+
+            if (DetainedID > 0)
+            {
+                this.DetainID = DetainedID;
+                return true;
+            }
+            else
+                return false;
+        }
+
+        private bool _ReleasedLicense()
+        {
+            if (clsDetainedAndReleaseLicenseDataAccessLayer.ReleasLicense(this.DetainID, this.ReleaseDate, this.CreatedByUserID, this.ReleaseApplicationID))
+                return true;
+            else
+                return false;
+        }
+        static public bool IsLicenseDetained(int LicenseID)
+        {
+            return clsDetainedAndReleaseLicenseDataAccessLayer.IsLicenseDetained(LicenseID);
+        }
+
+        public bool Save()
+        {
+            switch(this._Mode)
+            {
+                case enMode.AddNew:                                    //This mode means Detained License
+                    if (_DetainedLicense())
+                    {
+                        this._Mode = enMode.Update;
+                        return true;
+                    }
+                    else
+                        return false;
+
+                    case enMode.Update:                              //This mode means Releas License
+                    if (_ReleasedLicense())
+                    {
+                        return true;
+                    }
+                    else
+                        return false;
+
+            }
+            return false;
+        }
+    }
+}

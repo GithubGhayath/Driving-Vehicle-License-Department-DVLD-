@@ -1,0 +1,104 @@
+using DVLDataAccessLayar;
+using Microsoft.SqlServer.Server;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
+
+namespace DVLDDataAccessLayar
+{
+    public class clsApplicationTypeDataAccessLayar
+    {
+        static public DataTable GetAllApplicationType()
+        {
+            DataTable Applications= new DataTable();
+
+            SqlConnection connection = new SqlConnection(clsDataAccessSittings.ConnectionString);
+
+            string Query = @"SELECT *FROM ApplicationTypes";
+
+            SqlCommand command = new SqlCommand(Query, connection);
+
+            try
+            {
+                connection.Open();
+
+                SqlDataReader reader = command.ExecuteReader();
+
+                if(reader.HasRows)
+                {
+                    Applications.Load(reader);
+                }
+
+            }
+            catch(Exception ex) { }
+            finally { connection.Close(); }
+
+            return Applications;
+        }
+
+        static public bool UpdateApplicationType(int AppID,string Title,Decimal fee)
+        {
+            int RowAffected = -1;
+
+            SqlConnection connection = new SqlConnection(clsDataAccessSittings.ConnectionString);
+
+            string Query = @"
+                                UPDATE ApplicationTypes
+                                   SET ApplicationTypeTitle =@Title
+                                      ,ApplicationFees = @fee
+                                 WHERE ApplicationTypeID=@AppID";
+
+            SqlCommand command = new SqlCommand(Query, connection);
+            command.Parameters.AddWithValue("@Title", Title);
+            command.Parameters.AddWithValue("@fee", fee);
+            command.Parameters.AddWithValue("@AppID", AppID);
+
+            try
+            {
+                connection.Open();
+
+                RowAffected = command.ExecuteNonQuery();
+            }
+            catch(Exception ex) { }
+            finally { connection.Close(); }
+
+            return RowAffected > 0;
+        }
+
+        static public bool Find(int AppID,ref string title,ref Decimal fee) 
+        {
+            bool IsFound = false;
+
+            SqlConnection connection = new SqlConnection(clsDataAccessSittings.ConnectionString);
+
+            string Query = "SELECT * FROM ApplicationTypes WHERE ApplicationTypeID=@AppID";
+
+            SqlCommand command = new SqlCommand(Query,connection);
+            command.Parameters.AddWithValue("@AppID", AppID);
+
+            try
+            {
+                connection.Open();
+
+                SqlDataReader reader = command.ExecuteReader();
+
+                while(reader.Read())
+                {
+                    IsFound = true;
+                    title = (string)reader["ApplicationTypeTitle"];
+                    fee = (Decimal)reader["ApplicationFees"];
+
+                }
+                reader.Close();
+            }
+            catch(Exception ex) { }
+            finally { connection.Close(); }
+
+            return IsFound;
+
+        }
+
+    }
+}

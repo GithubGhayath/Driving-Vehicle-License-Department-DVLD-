@@ -1,0 +1,151 @@
+using DVLDDataAccessLayar;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DVLDBusinessLayar
+{
+    public class clsUserDataBusinessLayar
+    {
+        enum _enMode { Addnew,update};
+
+        private _enMode _Mode {  get; set; }
+        public string UserName { get; set; }
+        public string Password { get; set; }
+        public bool IsActive { get; set; }
+        public int PersonID { get; set; }
+        public int UserID { get; set; }
+
+        public clsUserDataBusinessLayar() 
+        {
+            this.PersonID = 0;
+            this.IsActive = false;
+            this.UserID = 0;
+            this.UserName = string.Empty;
+            this.Password = string.Empty;
+
+            _Mode = _enMode.Addnew;
+        
+        }
+        private clsUserDataBusinessLayar(string usernae,string password,int personid,int userid,bool isactive)
+        {
+            this.UserName= usernae;
+            this.Password= password;
+            this.IsActive = isactive;
+            this.UserID = userid;
+            this.PersonID = personid;
+
+            _Mode = _enMode.update;
+        }
+        static public DataTable GetAllUses()
+        {
+            return clsUsersDataAccesslayar.GetAllUsers();
+        }
+
+        static public clsUserDataBusinessLayar Find(string UserName)
+        {
+            string password = string.Empty;
+            int PersonID= 0;
+            bool IsActive = false;
+            int UserID = 0;
+
+            if (clsUsersDataAccesslayar.Find(ref UserID, UserName, ref password, ref IsActive, ref PersonID))
+                return new clsUserDataBusinessLayar(UserName, password, PersonID, UserID, IsActive);
+            else
+                return null;
+        }
+
+        static public clsUserDataBusinessLayar Find(int UserID)
+        {
+            string UserName = string.Empty;
+            string Password = string.Empty; 
+            int PersonID = 0;
+            bool IsActive = false;
+
+            if (clsUsersDataAccesslayar.Find(UserID, ref UserName, ref Password, ref IsActive, ref PersonID))
+                return new clsUserDataBusinessLayar(UserName, Password, PersonID, UserID, IsActive);
+            else
+                return null;
+        }
+
+        private bool _AddNewUser()
+        {
+            int Reslut = clsUsersDataAccesslayar.AddNewUser(this.UserName, this.Password, this.IsActive, this.PersonID);
+
+            if(Reslut > 0)
+            {
+                this.UserID = Reslut;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+            
+        }
+
+        static public bool Delete(int UserID)
+        {
+            return clsUsersDataAccesslayar.DeleteUser(UserID);
+        }
+
+        private bool _UpdateUser()
+        {
+            int RowsAffected = clsUsersDataAccesslayar.UpdateUserInfo(this.UserID, this.UserName, this.Password, this.IsActive, this.PersonID);
+
+            if(RowsAffected > 0) 
+            {
+                return true;
+            }
+            else
+            {
+                return false; 
+            }
+        }
+
+        public bool Save()
+        {
+            switch (this._Mode)
+            {
+                case _enMode.Addnew:
+                    { 
+                        if(_AddNewUser())
+                        {
+                            this._Mode = _enMode.update;
+                            return true;
+                        }
+                        else
+                            return false;
+                    }
+                case _enMode.update:
+                    {
+                        if(_UpdateUser())
+                        {
+                            return true;
+                        }
+                        else
+                        { 
+                            return false;
+                        }
+                    }
+            }
+
+
+
+            return false;
+        }
+
+        static public bool IsExists(int usrID)
+        {
+            return clsUsersDataAccesslayar.IsExists(usrID);
+        }
+
+        static public bool IsExistsByUserPersonID(int PersonID)
+        {
+            return clsUsersDataAccesslayar.IsExistsByPersonID(PersonID);
+        }
+    }
+}

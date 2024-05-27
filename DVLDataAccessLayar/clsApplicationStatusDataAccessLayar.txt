@@ -1,0 +1,71 @@
+using DVLDataAccessLayar;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DVLDDataAccessLayar
+{
+    public class clsApplicationStatusDataAccessLayar
+    {
+        static public bool Find(int StatusID,ref string StatusName)
+        {
+            bool IsFound=false;
+            SqlConnection connection = new SqlConnection(clsDataAccessSittings.ConnectionString);
+
+            string Query = "SELECT *FROM ApplicationsStatus WHERE StatusID=@StatusID";
+
+            SqlCommand command=new SqlCommand(Query, connection);
+            command.Parameters.AddWithValue("@StatusID", StatusID);
+
+            try
+            {
+                connection.Open();
+
+                SqlDataReader reader = command.ExecuteReader();
+
+                while(reader.Read())
+                {
+                    IsFound= true;
+                    StatusName = (string)reader["Status"];
+                }
+                reader.Close();
+            }
+            catch (Exception ex) { }
+            finally { connection.Close(); }
+
+            return IsFound;
+        }
+
+        static public DataTable GetAllStatus()
+        {
+            DataTable dt = new DataTable();
+
+            SqlConnection connection = new SqlConnection(clsDataAccessSittings.ConnectionString);
+
+            string Query = "SELECT *FROM ApplicationsStatus";
+
+            SqlCommand command=new SqlCommand(Query, connection);
+
+            try
+            {
+                connection.Open();
+
+                SqlDataReader reader = command.ExecuteReader();
+
+                if(reader.HasRows)
+                {
+                    dt.Load(reader);
+                }
+            }
+
+            catch (Exception ex) { }
+            finally { connection.Close(); }
+
+            return dt;
+        }
+    }
+}

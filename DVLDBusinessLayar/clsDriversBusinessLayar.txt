@@ -1,0 +1,114 @@
+using DVLDDataAccessLayar;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DVLDBusinessLayar
+{
+    public class clsDriversBusinessLayar
+    {
+        enum enMode { AddNew,Update}
+
+        private enMode _Mode { get; set; }
+        public int DriverID {get;set;}
+        public int PersonID   {get;set;}
+        public int CreatedByUserID { get; set; }
+        public DateTime CreatedDate { get; set; }
+
+        /*
+         *  int PersonID = 0;
+            int CreatedByUserID = 0;
+            DateTime CreatedDate = DateTime.Now;
+         */
+
+        public clsDriversBusinessLayar()
+        {
+            this.DriverID = 0;  
+            this. PersonID = 0;
+            this. CreatedByUserID = 0;
+            this. CreatedDate = DateTime.Now;
+
+            this._Mode= enMode.AddNew;  
+        }
+
+        private clsDriversBusinessLayar(int DriverID,int PersonID,
+        int CreatedByUserID,
+        DateTime CreatedDate)
+        {
+            this.DriverID = DriverID;
+            this.PersonID = PersonID;
+            this.CreatedByUserID = CreatedByUserID;
+            this.CreatedDate = CreatedDate;
+
+            this._Mode = enMode.Update;
+        }
+
+        public static DataTable GetAllDrivers()
+        {
+            return clsDriversDataAccessLayar.GetAllDrivers();
+        }
+        private bool _AddNewDriver()
+        {
+           
+
+            int DriverID = clsDriversDataAccessLayar.AddNewDriver(this.PersonID, this.CreatedByUserID, this.CreatedDate);
+            if (DriverID > 0)
+            {
+                this.DriverID = DriverID;
+                return true;
+            }
+            else
+                return false;
+        }
+
+        static public clsDriversBusinessLayar Find(int DriverID)
+        {
+
+            int PersonID = 0;
+            int CreatedByUserID = 0;
+            DateTime CreatedDate = DateTime.Now;
+
+            if (clsDriversDataAccessLayar.Find(DriverID, ref PersonID, ref CreatedByUserID, ref CreatedDate))
+            {
+                return new clsDriversBusinessLayar(DriverID, PersonID, CreatedByUserID, CreatedDate);
+            }
+            else
+                return null;
+        }
+
+        static public clsDriversBusinessLayar FindByPersonID(int PersonID)
+        {
+
+            int DriverID = 0;
+            int CreatedByUserID = 0;
+            DateTime CreatedDate = DateTime.Now;
+
+            if (clsDriversDataAccessLayar.Find(ref DriverID,  PersonID, ref CreatedByUserID, ref CreatedDate))
+            {
+                return new clsDriversBusinessLayar(DriverID, PersonID, CreatedByUserID, CreatedDate);
+            }
+            else
+                return null;
+        }
+
+
+        public bool Save()
+        {
+            switch(this._Mode)
+            {
+                case enMode.AddNew:
+                    if (_AddNewDriver())
+                    {
+                        this._Mode = enMode.Update;
+                        return true; 
+                    }
+                    else
+                        return false;
+            }
+            return false;
+        }
+    }
+}

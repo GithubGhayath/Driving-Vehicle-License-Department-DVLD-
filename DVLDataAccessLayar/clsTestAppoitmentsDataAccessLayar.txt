@@ -1,0 +1,215 @@
+using DVLDataAccessLayar;
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Security.Policy;
+using System.Collections;
+using System.Data;
+using System.Diagnostics;
+
+namespace DVLDDataAccessLayar
+{
+    public class clsTestAppoitmentsDataAccessLayar
+    {
+        static public int AddNewAppoitment(int TestTypeID,int LocalDrivingLicenseApplicationID,DateTime AppointmentDate,decimal PaidFees,int CreatedByUserID,bool IsLocked)
+        {
+            int AppoitmentID = -1;
+
+            SqlConnection connection = new SqlConnection(clsDataAccessSittings.ConnectionString);
+
+            string Query = @"INSERT INTO TestAppointments
+                           VALUES
+                                (@TestTypeID
+                                ,@LocalDrivingLicenseApplicationID
+                                ,@AppointmentDate
+                                ,@PaidFees
+                                ,@CreatedByUserID
+                                ,@IsLocked)SELECT SCOPE_IDENTITY()";
+
+            SqlCommand command=new SqlCommand(Query, connection);
+            command.Parameters.AddWithValue("@TestTypeID", TestTypeID);
+            command.Parameters.AddWithValue("@LocalDrivingLicenseApplicationID", LocalDrivingLicenseApplicationID);
+            command.Parameters.AddWithValue("@AppointmentDate", AppointmentDate);
+            command.Parameters.AddWithValue("@PaidFees", PaidFees);
+            command.Parameters.AddWithValue("@CreatedByUserID", CreatedByUserID);
+            command.Parameters.AddWithValue("@IsLocked", IsLocked);
+
+            try
+            {
+                connection.Open();
+
+                object AAppoitmentID = command.ExecuteScalar();
+
+                if(int.TryParse(AAppoitmentID.ToString(),out int AID))
+                {
+                    AppoitmentID = AID;
+                }
+            }
+            catch (Exception ex) { }
+            finally { connection.Close(); }
+
+            return AppoitmentID;
+        }
+
+        static public bool Find(int AppoitmentID,ref int TestTypeID,ref int LocalDrivingLicenseApplicationID,ref DateTime AppointmentDate,ref decimal PaidFees,ref int CreatedByUserID,ref bool IsLocked)
+        {
+            bool IsFound = false;
+
+            SqlConnection connction = new SqlConnection(clsDataAccessSittings.ConnectionString);
+
+            string Query = "SELECT *FROM TestAppointments WHERE TestAppointmentID=@AppoitmentID";
+
+            SqlCommand command=new SqlCommand(Query, connction);
+            command.Parameters.AddWithValue("@AppoitmentID", AppoitmentID);
+
+            try
+            {
+                connction.Open();
+
+                SqlDataReader reader = command.ExecuteReader();
+
+                while(reader.Read())
+                {
+                    IsFound = true;
+                    TestTypeID = (int)reader["TestTypeID"];
+                    LocalDrivingLicenseApplicationID = (int)reader["LocalDrivingLicenseApplicationID"];
+                    AppointmentDate = (DateTime)reader["AppointmentDate"];
+                    PaidFees = (decimal)reader["PaidFees"];
+                    CreatedByUserID = (int)reader["CreatedByUserID"];
+                    IsLocked = (bool)reader["IsLocked"];
+                }
+
+                reader.Close();
+            }
+            catch (Exception ex) { }
+            finally { connction.Close(); }
+
+            return IsFound ;
+        }
+
+        static public int Update(int AppoitmentID, int TestTypeID, int LocalDrivingLicenseApplicationID, DateTime AppointmentDate, decimal PaidFees, int CreatedByUserID, bool IsLocked)
+        {
+            int RowAffected = -1;
+
+            SqlConnection connection = new SqlConnection(clsDataAccessSittings.ConnectionString);
+
+            string Query = @"
+                            UPDATE TestAppointments
+                               SET TestTypeID = @TestTypeID
+                                  ,LocalDrivingLicenseApplicationID = @LocalDrivingLicenseApplicationID
+                                  ,AppointmentDate = @AppointmentDate
+                                  ,PaidFees = @PaidFees
+                                  ,CreatedByUserID = @CreatedByUserID
+                                  ,IsLocked = @IsLocked
+                             WHERE TestAppointmentID=@AppoitmentID";
+
+            SqlCommand command=new SqlCommand(@Query, connection);
+            command.Parameters.AddWithValue("@TestTypeID", TestTypeID);
+            command.Parameters.AddWithValue("@LocalDrivingLicenseApplicationID", LocalDrivingLicenseApplicationID);
+            command.Parameters.AddWithValue("@AppointmentDate", AppointmentDate);
+            command.Parameters.AddWithValue("@PaidFees", PaidFees);
+            command.Parameters.AddWithValue("@CreatedByUserID", CreatedByUserID);
+            command.Parameters.AddWithValue("@IsLocked", IsLocked);
+            command.Parameters.AddWithValue("@AppoitmentID", AppoitmentID);
+            
+
+            try
+            {
+                connection.Open();
+
+                RowAffected = command.ExecuteNonQuery();
+            }
+            catch (Exception ex) { }
+            finally { connection.Close(); }
+
+            return RowAffected;
+        }
+
+        static public bool Delete(int TestAppointmentID)
+        {
+            int RowAffected = -1;
+
+            SqlConnection connection = new SqlConnection(clsDataAccessSittings.ConnectionString);
+
+            string Query = "DELETE FROM TestAppointments WHERE TestAppointmentID=@TestAppointmentID";
+
+            SqlCommand command= new SqlCommand(@Query, connection);
+            command.Parameters.AddWithValue("@TestAppointmentID", TestAppointmentID);
+
+            try
+            {
+                connection.Open();
+
+                RowAffected = command.ExecuteNonQuery();
+            }
+            catch (Exception ex) { }
+            finally { connection.Close(); }
+
+            return RowAffected > 0;
+            // True : Appoitment Deleted
+            // False : There is an error
+        }
+
+        static public DataTable GetAllAppointments(int LocalDrivingLicenseApplicationID,int TestTypeID)
+        {
+            DataTable Appointments = new DataTable();
+
+            SqlConnection connection = new SqlConnection(clsDataAccessSittings.ConnectionString);
+
+            string Query = @"
+SELECT TestAppointmentID,AppointmentDate,PaidFees,IsLocked FROM TestAppointments
+WHERE LocalDrivingLicenseApplicationID=@LocalDrivingLicenseApplicationID and TestTypeID = @TestTypeID";
+
+            SqlCommand command=new SqlCommand(Query, connection);
+            command.Parameters.AddWithValue("@LocalDrivingLicenseApplicationID", LocalDrivingLicenseApplicationID);
+            command.Parameters.AddWithValue("@TestTypeID", TestTypeID);
+
+            try
+            {
+                connection.Open();
+
+                SqlDataReader reader = command.ExecuteReader();
+
+                if(reader.HasRows)
+                {
+                    Appointments.Load(reader);
+                }
+            }
+            catch (Exception ex) { }
+            finally { connection.Close(); }
+
+            return Appointments;
+
+        }
+
+        static public bool IsAppointmentActive(int AppointmentID)
+        {
+            bool IsActive = false;
+
+            SqlConnection connection = new SqlConnection(clsDataAccessSittings.ConnectionString);
+
+            string Query = @"select IsLocked from TestAppointments where TestAppointmentID = @AppointmentID";
+
+            SqlCommand command=new SqlCommand(Query, connection);
+            command.Parameters.AddWithValue("@AppointmentID", AppointmentID);
+
+            try
+            {
+                connection.Open();
+
+                Object Field = command.ExecuteScalar();
+
+                IsActive = Convert.ToBoolean(Field);
+            }
+            catch (Exception ex) { }
+            finally { connection.Close(); }
+
+            return IsActive;
+
+        }
+
+      
+
+    }
+}

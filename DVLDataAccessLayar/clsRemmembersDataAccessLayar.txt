@@ -1,0 +1,101 @@
+using DVLDataAccessLayar;
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DVLDDataAccessLayar
+{
+    public class clsRemmembersDataAccessLayar
+    {
+        static public int AddNewReconrd(string MacAddress, int UserID, bool RemmemberMe)
+        {
+            int RecordID = -1;
+
+            SqlConnection connection = new SqlConnection(clsDataAccessSittings.ConnectionString);
+
+            string Query = @"INSERT INTO Remmemers VALUES (@UserID,@RememberMe,@MacAddress);SELECT SCOPE_IDENTITY();";
+
+            SqlCommand command = new SqlCommand(Query, connection);
+            command.Parameters.AddWithValue("@UserID", UserID);
+            command.Parameters.AddWithValue("@RememberMe", RemmemberMe);
+            command.Parameters.AddWithValue("@MacAddress", MacAddress);
+
+            try
+            {
+                connection.Open();
+
+                Object RecordIDd = command.ExecuteScalar();
+
+                if(int.TryParse(RecordIDd.ToString(),out int ReID))
+                {
+                    RecordID = ReID;
+                }
+            }
+            catch (Exception ex) { }
+            finally { connection.Close(); }
+
+            return RecordID;
+        }
+
+
+
+        static public bool Find(string MacAddress, ref int UserID, ref bool RemmemberMe, ref int RecordID)
+        {
+            bool IsFound = false;
+
+            SqlConnection Connection = new SqlConnection(clsDataAccessSittings.ConnectionString);
+
+            string Query = @"SELECT * FROM Remmemers WHERE MacAddress=@MacAddress";
+
+            SqlCommand command = new SqlCommand(Query, Connection);
+            command.Parameters.AddWithValue("@MacAddress", MacAddress);
+            try
+            {
+                Connection.Open();
+
+                SqlDataReader reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    IsFound = true;
+                    UserID = reader.GetInt32(reader.GetOrdinal("UserID"));
+                    RemmemberMe = reader.GetBoolean(reader.GetOrdinal("RememberMe"));
+                    RecordID = reader.GetInt32(reader.GetOrdinal("ID"));
+                }
+                reader.Close();
+            }
+            catch (Exception e) { }
+            finally { Connection.Close(); }
+
+            return IsFound;
+        }
+
+        static public int UpdateRecord(bool remmemberMe, int recordID)
+        {
+            int RowsAffected = -1;
+
+            SqlConnection connection = new SqlConnection(clsDataAccessSittings.ConnectionString);
+
+            String Query = @"UPDATE Remmemers
+                                  SET RememberMe = @RememberMe
+                                WHERE ID=@recordID";
+
+            SqlCommand command = new SqlCommand(Query, connection);
+            command.Parameters.AddWithValue("@RememberMe", remmemberMe);
+            command.Parameters.AddWithValue("@recordID", recordID);
+            try
+            {
+                connection.Open();
+
+                RowsAffected = command.ExecuteNonQuery();
+            }
+            catch (Exception e) { }
+            finally { connection.Close(); }
+
+            return RowsAffected;
+        }
+    }
+}

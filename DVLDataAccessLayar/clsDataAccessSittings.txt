@@ -1,0 +1,10 @@
+using System;
+
+
+namespace DVLDataAccessLayar
+{
+    static class clsDataAccessSittings
+    {
+        static public string ConnectionString = "Server=.;Database=DVLD;User id=sa;Password=sa123456";
+    }
+}

@@ -1,0 +1,1147 @@
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Net.NetworkInformation;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+using System.Xml.Serialization;
+using DVLDBusinessLayar;
+
+namespace DVLD
+{
+    internal class PresentationLayar
+    {
+        static void testGetAllPerson()
+        {
+            DataTable Persons = clsPeopleBusinessLayar.GetAllPeople();
+
+            foreach(DataRow Row in Persons.Rows)
+            {
+                Console.WriteLine($"ID : {Row["PersonID"]} ,Nationality {Row["NationalNo"]}, FirstName {Row["FirstName"]} , SecondName {Row["SecondName"]} , ThirdName {Row["ThirdName"]} , FourthName {Row["LastName"]} DateBirth {Row["DateOfBirth"]} , Gendor {Row["Gendor"]} ,Address {Row["Address"]} , Phone {Row["Phone"]} , Email {Row["Email"]} , NationalityCountry {Row["CountryName"]}");
+            }
+        }
+
+        static void testAddNew()
+        {
+            clsPeopleBusinessLayar Peerson = new clsPeopleBusinessLayar();
+            Peerson.FirstName = "Ghayath";
+            Peerson.SecondName = "Ahmad";
+            Peerson.ThirdName = "AlAli";
+            Peerson.LastName = "Alrazj";
+            Peerson.Phone = "+963 258 741 258";
+            Peerson.ImagePath = "C/:";
+            Peerson.Address = "Syria/Damascus/KafarSousa";
+            Peerson.Email = "Gh@gmail.com";
+            Peerson.NationalityCountryID = 169;
+            Peerson.NationalNo = "N8";
+            Peerson.DateOfBirth = new DateTime(2003, 4, 28);
+            Peerson.Gendor = "Male";
+
+            if(Peerson.Save())
+            {
+                Console.WriteLine("Person With ID : " + Peerson.PersonID + " Added Successfully");
+            }
+            else
+            { Console.WriteLine("There is a Problem "); }
+
+        }
+
+        static void testFind(int ID)
+        {
+            clsPeopleBusinessLayar Person = clsPeopleBusinessLayar.Find(ID);
+
+            if (Person == null)
+                Console.WriteLine("There is a problem ");
+            else
+                Console.WriteLine("Person With ID : " + ID + " Found");
+            Console.WriteLine("Name : " + Person.FirstName + " " + Person.SecondName + " " + Person.ThirdName + " " + Person.LastName);
+        }
+
+        static void testDelete(int id)
+        {
+            if (clsPeopleBusinessLayar.IsExists(id))
+            {
+                if (clsPeopleBusinessLayar.DeletePerson(id))
+                    Console.WriteLine("Deleted Successfully");
+                else
+                    Console.WriteLine("There is a problem");
+            }
+            else
+                Console.WriteLine("There is no person");
+        }
+
+        static void testUpdate(int id)
+        {
+            clsPeopleBusinessLayar Person = clsPeopleBusinessLayar.Find(id);
+
+            Person.FirstName = "Ghayath";
+            Person.SecondName = "Ahmad";
+            Person.ThirdName = "Alali";
+            Person.LastName = "Alrazj";
+            Person.Phone = "+963 258 741 258";
+            Person.Gendor = "Male";
+            Person.Address = "Syria/Damascuse";
+            Person.Email = "Ghayath@gmail.com";
+            Person.DateOfBirth = DateTime.Now;
+            Person.NationalityCountryID = 169;
+            Person.NationalNo = "N44";
+            Person.ImagePath=string.Empty;
+
+            if (Person.Save())
+                Console.WriteLine("Person Updated Successfully ");
+            else
+                Console.WriteLine("There is a problem");
+        }
+
+        static void testPrinAllCountris()
+        {
+            DataTable Countries = clsCountriesBusinessLayar.GetAllCountries();
+
+            foreach(DataRow R in Countries.Rows)
+            {
+                Console.WriteLine("Id : " + R["CountryID"] + "\tName : " + R["CountryName"]);
+            }
+        }
+
+        static void Find(int Countryid)
+        {
+            clsCountriesBusinessLayar Country = clsCountriesBusinessLayar.Find(Countryid);
+
+            if (Country != null)
+                Console.WriteLine("Country ID : " + Country.CountryID + "\tCountry Name : " + Country.CountryName);
+            else
+                Console.WriteLine("There is no Country With ID : " + Countryid);
+        }
+
+        static void Find(string CountryName)
+        {
+            clsCountriesBusinessLayar Country = clsCountriesBusinessLayar.Find(CountryName);
+
+            if (Country != null)
+                Console.WriteLine("Country ID : " + Country.CountryID + "\tCountry Name : " + Country.CountryName);
+            else
+                Console.WriteLine("There is no Country With Name : " + CountryName);
+        }
+
+        static void GetAllUserstest()
+        {
+            DataTable users = clsUserDataBusinessLayar.GetAllUses();
+
+            foreach(DataRow Row in  users.Rows)
+            {
+                Console.WriteLine($"UserID : {Row["UserID"]}, Password : {Row["Password"]}, UserName : {Row["UserName"]} PersonID : {Row["PersonID"]} Is Active : {Row["IsActive"]}");
+            }
+        }
+
+        static void testFind(string username)
+        {
+            clsUserDataBusinessLayar User = clsUserDataBusinessLayar.Find(username);
+
+            if (User == null)
+            {
+                Console.WriteLine("There is no user with name : " + username);
+            }
+            else
+                Console.WriteLine($"User name : {User.UserName}, Password : {User.Password}, IsActive : {User.IsActive}, Person ID : {User.PersonID}, UserID : {User.UserID}");
+        }
+
+        static void testDeleteUser(int  Userid)
+        {
+            if (clsUserDataBusinessLayar.Delete(Userid))
+            {
+                Console.WriteLine("user Deleted Successfully ");
+            }
+            else
+                Console.WriteLine("There is a problem ");
+        }
+
+        static void testAddUser()
+        {
+            clsUserDataBusinessLayar User = new clsUserDataBusinessLayar();
+
+            User.UserName = "Amjad1";
+            User.PersonID = 1059;
+            User.Password = "1234";
+            User.IsActive = false;
+
+            if (User.Save())
+            {
+                Console.WriteLine("User Added Successfully with ID : [" + User.UserID + "]");
+            }
+            else
+                Console.WriteLine("There is a problem");
+        }
+
+        static void testUpdateUser(int userid) 
+        {
+            clsUserDataBusinessLayar user = clsUserDataBusinessLayar.Find(userid);
+
+            if (user == null)
+            {
+                Console.WriteLine("User not found ");
+            }
+            else
+            {
+                user.UserName = "Maher";
+                user.IsActive = true;
+                user.Password = "1234";
+                user.PersonID = 1024;
+
+                if (user.Save())
+                {
+                    Console.WriteLine("Update User Successfully :)");
+                }
+                else
+                    Console.WriteLine("There is a problem");
+            }
+        
+        }
+
+
+        static void testFindR(string Mac)
+        {
+            clsRemmembersBussinessLayar Re = clsRemmembersBussinessLayar.Find(Mac);
+            if (Re != null)
+                Console.WriteLine($"Record : {Re.RecoredID},UserId : {Re.UserID},Remmember Me : {Re.RemmemberMe},MacAddress : {Re.MacAddress}");
+            else
+                Console.WriteLine("There is a problem ");
+
+        }
+
+        static void testAddNewR(string Mac,int UserId,bool remmemberme)
+        {
+            clsRemmembersBussinessLayar R = new clsRemmembersBussinessLayar();
+
+            R.UserID = UserId;
+            R.MacAddress = Mac;
+            R.RemmemberMe = remmemberme;
+
+            if(R.Save())
+            {
+                Console.WriteLine("Recored Added Successfully wit ID : " + R.RecoredID);
+            }
+            else
+            {
+                Console.WriteLine("There is a problem "); 
+            }
+
+        }
+
+        static void testUpdate()
+        {
+            clsRemmembersBussinessLayar Re = clsRemmembersBussinessLayar.Find("0000:0000:0000:0000:0000");
+
+            Re.RemmemberMe = true;
+            Re.UserID = 1024;
+
+            if(Re.Save()) 
+            {
+                Console.WriteLine("Updated Seccussfully ");
+            }
+            else
+            { Console.WriteLine("There is a problem "); }
+        }
+
+        static void Test(string National)
+        {
+            clsPeopleBusinessLayar Person = clsPeopleBusinessLayar.Find(National);
+
+            if (Person == null)
+                Console.WriteLine("There is a problem ");
+            else
+            {
+                Console.WriteLine("Person With ID : " + Person.NationalNo + " Found");
+                Console.WriteLine("Name : " + Person.FirstName + " " + Person.SecondName + " " + Person.ThirdName + " " + Person.LastName);
+            }
+        }
+
+        static void GetAllApp()
+        {
+            DataTable dt = clsApplicationTypeBusinessLayar.GetAllApplicationType();
+
+            foreach (DataRow row in dt.Rows)
+                Console.WriteLine($"AppID : {row["ApplicationTypeID"]}, Title : {row["ApplicationTypeTitle"]}, Fees : {row["ApplicationFees"]}");
+        }
+
+        static void Update(int id,string title, Decimal fee)
+        {
+            if(clsApplicationTypeBusinessLayar.UpdateAnApplication(id,title,fee))
+            {
+                Console.WriteLine("Updated SuccessFully");
+            }
+            else
+            {
+                Console.WriteLine("There is a problem");
+            }
+        }
+
+        static void FindApp(int id)
+        {
+            clsApplicationTypeBusinessLayar a = clsApplicationTypeBusinessLayar.Find(id);
+
+            if(a!=null)
+            {
+                Console.WriteLine($"{a.AppId}, {a.Title}, {a.Fees}");
+            }
+            else
+            {
+                Console.WriteLine("There is a problem");
+            }
+        }
+
+        static void GetAllTest()
+        {
+            DataTable dt = clsTestTypesBusinessLayar.GetAllTestTypes();
+
+            foreach(DataRow row in dt.Rows)
+            {
+                Console.WriteLine($"{row["TestTypeID"]}\t{row["TestTypeTitle"]}\t{row["TestTypeDescription"]}\t{row["TestTypeFees"]}");
+            }
+        }
+
+        static void TestFind(int id)
+        {
+            clsTestTypesBusinessLayar B = clsTestTypesBusinessLayar.Find(id);
+
+            if (B != null)
+            {
+                Console.WriteLine($"{B.TestID},{B.TestTitle},{B.TestDescription},{B.TestFees}");
+            }
+            else
+                Console.WriteLine("Test With ID " + id + " Not Found");
+        }
+
+        static void TestUpdate(int id,string title,string desc,decimal fee)
+        {
+            if (clsTestTypesBusinessLayar.UpdateTestInfo(id, title, desc, fee))
+                Console.WriteLine("Updated Successfully");
+            else
+                Console.WriteLine("There is a problem");
+        }
+
+        static void TestExists(int personid)
+        {
+            if (clsUserDataBusinessLayar.IsExistsByUserPersonID(personid))
+                Console.WriteLine("Found");
+            else
+                Console.WriteLine("Not Found");
+        }
+
+
+        static void GetApplicationTest()
+        {
+
+            /*
+             * 
+
+                    ApplicationID
+                    ApplicantPersonID
+                    ApplicationDate
+                    ApplicationTypeID
+                    ApplicationStatus
+                    LastStatusDate
+                    PaidFees
+                    CreatedByUserID
+             */
+            DataTable dt = clsApplicationsBusinessLayar.GetAllApplications();
+
+            foreach(DataRow r in  dt.Rows)
+            {
+                Console.WriteLine($"{r["ApplicationID"]},{r["ApplicantPersonID"]},{r["ApplicationDate"]},{r["ApplicationTypeID"]},{r["ApplicationStatus"]},{r["LastStatusDate"]},{r["PaidFees"]},{r["CreatedByUserID"]}");
+            }
+        }
+
+        static void testFindApp(int id)
+        {
+            clsApplicationsBusinessLayar A=clsApplicationsBusinessLayar.Find(id);
+
+            if (A != null)
+            { Console.WriteLine($"{A.ApplicantPersonID}, {A.ApplicationID}, {A.ApplicationDate}"); }
+            else
+                Console.WriteLine("Error");
+        }
+
+        static void testAdd()
+        {
+            clsApplicationsBusinessLayar A = new clsApplicationsBusinessLayar();
+
+            A.ApplicantPersonID = 1;
+            A.PaidFees = 200.3m;
+            A.ApplicationDate = DateTime.Now;
+            A.CreatedByUserID = 1;
+            A.LastStatusDate = DateTime.Now;
+            A.ApplicationStatus= 1;
+            A.ApplicationTypeID = 1;
+
+            if (A.Save())
+                Console.WriteLine("Application Added with id : " + A.ApplicationID);
+            else
+                Console.WriteLine("Error");
+
+        }
+
+        static void testLicenseClasses()
+        {
+            DataTable dt = clsLicenseClassesBusinessLayar.GetAllLicenseClasses();
+
+            foreach(DataRow r in dt.Rows)
+            {
+                Console.WriteLine($"{r["LicenseClassID"]},{r["ClassName"]},{r["ClassDescription"]},{r["MinimumAllowedAge"]},{r["DefaultValidityLength"]},{r["ClassFees"]}");
+            }
+        }
+
+        static void testGetLicenseClasses()
+        {
+            /*
+             * 
+--LocalDrivingLicenseApplicationID
+--ApplicationID
+--LicenseClassID
+             */
+
+            //LocalDrivingLicenseApplicationID	ClassName	NationalNo	full_name	ApplicationDate	Passed Tests	Status
+            DataTable dt = clsLocalDrivingLicenseApplicationsBusinessLayar.GetAllLocalDrivingLicenseApplications();
+
+            foreach(DataRow r in dt.Rows)
+            {
+                Console.WriteLine($"{r["LocalDrivingLicenseApplicationID"]}, {r["ClassName"]}, {r["NationalNo"]} ,{r["full_name"]}, {r["ApplicationDate"]} ,{r["Passed Tests"]} ,{r["Status"]}");
+            }
+        }
+
+        static void testAddL()
+        {
+            clsLocalDrivingLicenseApplicationsBusinessLayar L = new clsLocalDrivingLicenseApplicationsBusinessLayar();
+
+            L.ApplicationID = 52;
+            L.LicenseClassID = 1;
+
+            if (L.Save())
+                Console.WriteLine("Record Added Successfully with id : " + L.LocalDrivingLicenseApplicationID);
+            else
+                Console.WriteLine("Error");
+        }
+
+        static void testFindClass(int ID)
+        {
+            clsLocalDrivingLicenseApplicationsBusinessLayar L = clsLocalDrivingLicenseApplicationsBusinessLayar.Find(ID);
+
+            if (L != null)
+                Console.WriteLine($"{L.LicenseClassID}, {L.ApplicationID}, {L.LocalDrivingLicenseApplicationID}");
+            else
+                Console.WriteLine("Not Found");
+        }
+
+        static void UpdatClass(int ID)
+        {
+            clsLocalDrivingLicenseApplicationsBusinessLayar L = clsLocalDrivingLicenseApplicationsBusinessLayar.Find(ID);
+            L.LicenseClassID = 2;
+            L.ApplicationID = 65;
+            if (L.Save())
+                Console.WriteLine("Updeated ");
+            else
+                Console.WriteLine("Error");
+
+        }
+
+        static void DeleteClass(int ID)
+        {
+            if (clsLocalDrivingLicenseApplicationsBusinessLayar.Delete(ID))
+                Console.WriteLine("Deleted");
+            else
+                Console.WriteLine("Error");
+        }
+
+        static void testF(int Lid)
+        {
+            clsLicenseClassesBusinessLayar C = clsLicenseClassesBusinessLayar.Find(Lid);
+
+            if (C != null)
+                Console.WriteLine($"{C.ClassName}, {C.DefaultValidityLength}, {C.LicenseClassID}, {C.ClassDescription}, {C.ClassFees}");
+            else
+                Console.WriteLine("Error");
+        }
+
+        static void testFindstaus(byte id)
+        {
+            clsApplicationStatusBusinessLayar S = clsApplicationStatusBusinessLayar.Find(id);
+
+            if (S != null)
+                Console.WriteLine(S.StatusID + " " + S.StatusName);
+            else
+                Console.WriteLine("Error");
+        }
+
+        static void testGetAllStatus()
+        {
+            DataTable dt = clsApplicationStatusBusinessLayar.GetAllStatus();
+
+            foreach(DataRow r in dt.Rows)
+            {
+                Console.WriteLine($"{r[0]} , {r[1]}");
+            }
+        }
+
+        static void testAppoi()
+        {
+            clsTestAppointmentsBusinessLayar A = new clsTestAppointmentsBusinessLayar();
+
+            A.PaidFees = 110.2m;
+            A.AppointmentDate = DateTime.Now;
+            A.IsLocked = true;
+            A.CreatedByUserID = 1;
+            A.LocalDrivingLicenseApplicationID = 30;
+            A.TestTypeID = 1;
+
+            if(A.Save())
+            {
+                Console.WriteLine("Appoitment Added Successfully with ID : " + A.AppoitmentID);
+            }
+
+            else
+            {
+                Console.WriteLine("Error");
+            }
+
+        }
+
+        static void testApp(int ID)
+        {
+            clsTestAppointmentsBusinessLayar A=clsTestAppointmentsBusinessLayar.Find(ID);
+
+            if (A != null)
+                Console.WriteLine(A.AppoitmentID + " " + A.AppointmentDate.ToString() + " " + A.PaidFees + " " + A.CreatedByUserID + " " + A.IsLocked + " " + A.LocalDrivingLicenseApplicationID);
+            else
+                Console.WriteLine("Error");
+        }
+        static void UpdateApp(int ID)
+        {
+            clsTestAppointmentsBusinessLayar A = clsTestAppointmentsBusinessLayar.Find(ID);
+
+            A.TestTypeID = 3;
+            A.LocalDrivingLicenseApplicationID = 30;
+            A.AppointmentDate = DateTime.Now;
+            A.PaidFees = 33.0m;
+            A.IsLocked = false;
+
+            if(A.Save())
+            {
+                Console.WriteLine("Updated");
+            }
+            else { Console.WriteLine("Error");}
+       }
+
+        static void DeleteApp(int ID)
+        {
+            if (clsTestAppointmentsBusinessLayar.Delete(ID))
+                Console.WriteLine("Pass");
+            else
+            { Console.WriteLine("Error");}
+        }
+
+        static void teststatus(int ID,string status)
+        {
+            if (clsApplicationsBusinessLayar.UpdateApplicationStatus(ID, status))
+                Console.WriteLine("Updated");
+            else
+            { Console.WriteLine("Error");}
+        }
+
+        static void GEtetst(int LocalDrivingLicenseApplicationID,int T)
+        {
+            DataTable dt = clsTestAppointmentsBusinessLayar.GetAllAppointments(LocalDrivingLicenseApplicationID,T);
+
+            foreach(DataRow row in dt.Rows) 
+            {
+                Console.WriteLine($"{row[0]} , {row[1]} , {row[2]} , {row[3]}");
+            }
+        }
+        static void IsPersonHasApplication(int ID,int AppID)
+        {
+            if (clsApplicationsBusinessLayar.IsClientHasANewApplicationToAComplitApplication(ID, AppID))
+                Console.WriteLine("Yes Person Has Application");
+            else
+            {
+                Console.WriteLine("No Person Doesnot has an Application");
+            }
+        }
+        static void testIsActive(int ID)
+        {
+            if (clsTestAppointmentsBusinessLayar.IsAppointmentActive(ID))
+                Console.WriteLine("Active");
+            else
+                Console.WriteLine("Not Active");
+        }
+
+        static void testTEst(int ID)
+        {
+            clsTestsBusinessLayar t = clsTestsBusinessLayar.Find(ID);
+
+            if (t != null)
+                Console.WriteLine("TestID {0}, AppointmentID {1}, Resut {2}, Notes {3}, Created By User {4}", t.TestID, t.TestAppointmentID, t.TestResult, t.Notes, t.CreatedByUserID);
+            else
+                Console.WriteLine("Test Not found");
+
+        }
+
+        static void testinsert()
+        {
+            (bool, int) Result = clsTestsBusinessLayar.InsertNewTestRecord(65, false, "Glasses", 1);
+            if (Result.Item1)
+                Console.WriteLine("Added Successfully with ID :" + Result.Item2);
+            else
+            { Console.WriteLine("Error"); }
+        }
+        static void testCountPerson(int ID)
+        {
+            int Num=clsLocalDrivingLicenseApplicationsBusinessLayar.CountTestsThatPersonPassed(ID);
+
+            Console.WriteLine("Number of tests : " + Num);
+        }
+
+        static void IsPassedTest(int Local,int Type)
+        {
+            if (clsTestsBusinessLayar.IsPersonPassedTest(Local, Type))
+            {
+                Console.WriteLine("Person Passed");
+            }
+            else
+            {
+                Console.WriteLine("Person Fail");
+            }
+        }
+        static void TestAddLicense()
+        {
+            clsLicensesBusinessLayar L = new clsLicensesBusinessLayar();
+
+            L.Notes = null;
+            L.LicenseClass = 3;
+            L.ApplicationID = 52;
+            L.CreatedByUserID=1;
+            L.DriverID = 8;
+            L.ExpirationDate = DateTime.Now;    
+            L.IssueDate= DateTime.Now;
+            L.PaidFees = 50.2m;
+            L.IssueReason = 1;
+            L.IsActive = true;
+
+            if (L.Save())
+            {
+                Console.WriteLine("Added with ID : " + L.LicenseID);
+            }
+            else
+                Console.WriteLine("There is an Error");
+        }
+
+        static void testFindLi(int ID)
+        {
+            clsLicensesBusinessLayar l = clsLicensesBusinessLayar.Find(ID);
+            if(l != null)
+            {
+                Console.WriteLine($"{l.LicenseID}, {l.ApplicationID}, {l.IssueReason}, {l.IsActive}, {l.PaidFees}, {l.DriverID}, {l.CreatedByUserID}, {l.ExpirationDate}");
+            }
+            else
+            { Console.WriteLine("Eroro"); }
+        }
+
+        static void TestAddDriver()
+        {
+            clsDriversBusinessLayar D = new clsDriversBusinessLayar();
+
+            D.PersonID = 1065;
+            D.CreatedByUserID = 1;
+            D.CreatedDate=DateTime.Now;
+
+            if(D.Save())
+            {
+                Console.WriteLine("Driver Added Successfully with ID : " + D.DriverID);
+            }
+            else
+            { Console.WriteLine("Erorr"); }
+        }
+
+        static void TestFindDriver(int ID)
+        {
+            clsDriversBusinessLayar d = clsDriversBusinessLayar.FindByPersonID(ID);
+
+            if (d != null)
+            {
+                Console.WriteLine($"{d.DriverID} , {d.PersonID} , {d.CreatedByUserID} , {d.CreatedDate}");
+            }
+            else
+                Console.WriteLine("There is an error");
+        }
+
+        static void TEstFindByApp(int AppID)
+        {
+            clsLicensesBusinessLayar l = clsLicensesBusinessLayar.FindByApplicationID(AppID);
+            if(l != null )
+            {
+                Console.WriteLine($"{l.LicenseID}, {l.ApplicationID}, {l.IssueReason}, {l.IsActive}, {l.PaidFees}, {l.DriverID}, {l.CreatedByUserID}, {l.ExpirationDate} , {l.Notes}");
+            }
+            else
+            { Console.WriteLine("Error"); }
+        }
+
+        static void Del(int ID)
+        {
+            if(clsLocalDrivingLicenseApplicationsBusinessLayar.Delete(ID))
+            {
+                Console.WriteLine("Deleted Successfully");
+            }
+            else
+            {
+                Console.WriteLine("Error");
+            }    
+        }
+
+        static void GetLocal(int id)
+        {
+            /*
+             *  --LicenseID
+						 --ApplicationID
+						 --ClassName
+						 --IssueData
+						 --ExpirationData
+						 --IsActive
+             */
+            DataTable t = clsLicensesBusinessLayar.GetAllLocalLicenses(id);
+
+            foreach(DataRow r in t.Rows)
+            {
+                Console.WriteLine($"{r["LicenseID"]} , {r["ApplicationID"]} , {r["ClassName"]} , {r["IssueDate"]} , {r["ExpirationDate"]} , {r["IsActive"]}");
+            }
+        }
+
+        static void testgetalldrivers()
+        {
+            /*
+             * 
+						 --DriverID
+						 --PersonID
+						 --NationalNo
+						 --Full Name
+						 --Date
+						 --Active Licenses
+             */
+            DataTable d = clsDriversBusinessLayar.GetAllDrivers();
+
+            foreach(DataRow r in d.Rows)
+            {
+                Console.WriteLine($"{r["DriverID"]} , {r["PersonID"]} , {r["NationalNo"]} , {r["Full Name"]} , {r["Date"]} , {r["Active Licenses"]}");
+            }
+        }
+
+        static void testFindInternational(int id)
+        {
+            clsInternationalLicensesBusinessLayar i = clsInternationalLicensesBusinessLayar.Find(id);
+
+            if(i==null)
+            {
+                Console.WriteLine("Error");
+            }
+            else
+            {
+                Console.WriteLine($"{i.InternationalLicenseID} , {i.ApplicationID} , {i.DriverID} , {i.IssuedUsingLocalLicenseID} , {i.IssueDate} , {i.ExpirationDate} , {i.IsActive} , {i.CreatedByUserID}");
+            }
+        }
+
+        static void testAddnewInter()
+        {
+            clsInternationalLicensesBusinessLayar i = new clsInternationalLicensesBusinessLayar();
+
+            i.ApplicationID = 69;
+            i.DriverID = 9;
+            i.IssuedUsingLocalLicenseID = 17;
+            i.IssueDate = DateTime.UtcNow;
+            i.ExpirationDate = DateTime.UtcNow;
+            i.IsActive= true;
+            i.CreatedByUserID = 1;
+
+            if(i.Save())
+            {
+                Console.WriteLine("Successfully");
+            }
+            else
+            {
+                Console.WriteLine("ERror");
+            }
+
+        }
+        static void testinter()
+        {
+            DataTable t = clsInternationalLicensesBusinessLayar.GetAllForInternationalLicenseApplication();
+
+            foreach(DataRow r in t.Rows)
+            {
+                Console.WriteLine($"{r["InternationalLicenseID"]} , {r["ApplicationID"]} , {r["DriverID"]} ,  {r["IssueDate"]} , {r["ExpirationDate"]} , {r["IsActive"]} ");
+            }
+        }
+
+        static void testFindInternationalByDriver(int id)
+        {
+            clsInternationalLicensesBusinessLayar i = clsInternationalLicensesBusinessLayar.FindByDriverID(id);
+
+            if (i == null)
+            {
+                Console.WriteLine("Error");
+            }
+            else
+            {
+                Console.WriteLine($"{i.InternationalLicenseID} , {i.ApplicationID} , {i.DriverID} , {i.IssuedUsingLocalLicenseID} , {i.IssueDate} , {i.ExpirationDate} , {i.IsActive} , {i.CreatedByUserID}");
+            }
+        }
+        static void testFindInternationalByInternationalID(int id)
+        {
+            clsInternationalLicensesBusinessLayar i = clsInternationalLicensesBusinessLayar.FindByInternationalLicenseID(id);
+
+            if (i == null)
+            {
+                Console.WriteLine("Error");
+            }
+            else
+            {
+                Console.WriteLine($"{i.InternationalLicenseID} , {i.ApplicationID} , {i.DriverID} , {i.IssuedUsingLocalLicenseID} , {i.IssueDate} , {i.ExpirationDate} , {i.IsActive} , {i.CreatedByUserID}");
+            }
+        }
+
+        static void testGetInter(int id)
+        {
+            /*
+             * --InternationalLicenseID
+--ApplicationID
+--L.license ID
+--ExpirationDate
+--IsActive
+             */
+            DataTable p = clsInternationalLicensesBusinessLayar.GetInternationalLicenseByPersonID(id);
+
+            foreach(DataRow r in p.Rows)
+            {
+                Console.WriteLine($"{r["InternationalLicenseID"]} , {r["ApplicationID"]} , {r["L.license ID"]} , {r["ExpirationDate"]} , {r["IsActive"]}");
+            }
+        }
+
+        static void testIsTheLicenseExpired(int id)
+        {
+            if(clsLicensesBusinessLayar.IsTheLicenseExpired(id))
+            {
+                Console.WriteLine("License Expired");
+            }
+            else
+            {
+                Console.WriteLine("Not expired");
+            }
+        }
+
+        static void testupdateActivation(int id,bool act)
+        {
+            if (clsLicensesBusinessLayar.UpdateLicenseActivation(id, act))
+                Console.WriteLine("Seccuss");
+            else
+                Console.WriteLine("Error");
+        }
+
+        static void testAtive(int id)
+        {
+            if (clsLicensesBusinessLayar.IsLicenseActive(id))
+                Console.WriteLine("License with ID : " + id + " Active");
+            else
+                Console.WriteLine("License with ID : " + id + " not Active");
+
+        }
+
+        static void testDetained(int id)
+        {
+            //if (clsDetainedLicenseDataBusinessLayer.IsLicenseDetained(id))
+            //    Console.WriteLine("license detained");
+            //else
+            //    Console.WriteLine("License Released");
+        }
+
+        static void ReleasedTest(int id)
+        {
+            //    if (clsReleasedLicensesBusinessLayer.ReleasLicense(id,DateTime.Now,15,140))
+            //        Console.WriteLine("License Relesed ");
+            //    else
+            //        Console.WriteLine("Error");
+            //
+        }
+        static void testGetAll()
+        {
+            /*
+             * 
+						 --DetainID
+						 --LicenseID
+						 --IsReleased
+						 --FineFees
+						 --ReleaseDate
+						 --NationalNo
+						 --FullName
+             */
+            DataTable d = clsDetainedAndReleasedLiceneseBusinessLayer.GetAllDetained();
+
+            foreach(DataRow r in d.Rows)
+            {
+                Console.WriteLine($"{r["DetainID"]} , {r["LicenseID"]} , {r["IsReleased"]} , {r["FineFees"]} , {r["ReleaseDate"]} , {r["NationalNo"]} , {r["FullName"]}");
+            }
+        }
+
+        static void testfi(int id)
+        {
+            clsDetainedAndReleasedLiceneseBusinessLayer l = clsDetainedAndReleasedLiceneseBusinessLayer.Find(id);
+
+            if (l == null)
+                Console.WriteLine("Error");
+            else
+                Console.WriteLine($"{l.DetainID} , {l.LicenseID}  , {l.DetainDate} , {l.FineFees} , {l.CreatedByUserID} , {l.IsReleased} , {l.ReleaseDate} , {l.ReleasedByUserID} , {l.ReleaseApplicationID}");
+
+        }
+
+        static void testDet()
+        {
+            clsDetainedAndReleasedLiceneseBusinessLayer DetainedLIcense = new clsDetainedAndReleasedLiceneseBusinessLayer();
+
+            DetainedLIcense.LicenseID = 20;
+            DetainedLIcense.DetainDate = DateTime.Now;
+            DetainedLIcense.FineFees = 200.3m;
+            DetainedLIcense.CreatedByUserID = 15;
+            DetainedLIcense.IsReleased = false;
+
+            if (DetainedLIcense.Save())
+                Console.WriteLine("Released Successfully");
+            else
+                Console.WriteLine("Error");
+
+        }
+
+        static void tesRel(int Did)
+        {
+            clsDetainedAndReleasedLiceneseBusinessLayer d = clsDetainedAndReleasedLiceneseBusinessLayer.Find(Did);
+
+            d.ReleaseDate = DateTime.Now;
+            d.CreatedByUserID = 15;
+            d.ReleaseApplicationID = 140;
+
+
+            if (d.Save())
+                Console.WriteLine("Detained Successfully");
+            else
+                Console.WriteLine("Error");
+        }
+
+        static void testFindByreleasid(int id)
+        {
+
+            clsDetainedAndReleasedLiceneseBusinessLayer l
+                = clsDetainedAndReleasedLiceneseBusinessLayer.FindByReleaseApplicationID(id);
+
+            if (l == null)
+                Console.WriteLine("Error");
+            else
+                Console.WriteLine($"{l.DetainID} , {l.LicenseID}  , {l.DetainDate} , {l.FineFees} , {l.CreatedByUserID} , {l.IsReleased} , {l.ReleaseDate} , {l.ReleasedByUserID} , {l.ReleaseApplicationID}");
+
+        }
+
+        static void testFindByLIcenseid(int id)
+        {
+
+            clsDetainedAndReleasedLiceneseBusinessLayer l
+                = clsDetainedAndReleasedLiceneseBusinessLayer.FindByLicenseID(id);
+
+            if (l == null)
+                Console.WriteLine("Error");
+            else
+                Console.WriteLine($"{l.DetainID} , {l.LicenseID}  , {l.DetainDate} , {l.FineFees} , {l.CreatedByUserID} , {l.IsReleased} , {l.ReleaseDate} , {l.ReleasedByUserID} , {l.ReleaseApplicationID}");
+
+        }
+        static void Main(string[] args)
+        {
+            testGetLicenseClasses();
+            //testGetAllPerson();
+            //testFindByLIcenseid(22);
+            //testFindByreleasid(140);
+            //testFindByreleasid(1404);
+            //tesRel(4);
+            //testDet();
+            //testfi(1);
+            //testfi(1435);
+            //testGetAll();
+            //ReleasedTest(3);
+            //testDetained(22); //released
+
+
+            //testAtive(22);
+            //testAtive(19);
+
+            //testupdateActivation(23, true);
+            //testIsTheLicenseExpired(22);
+            //testIsTheLicenseExpired(19);
+            //testGetInter(1072);
+            //testGetInter(1072561);
+            //testFindInternationalByDriver(9);
+            //testFindInternationalByInternationalID(12);
+            //testinter();
+            //testAddnewInter();
+            //testFindInternational(69);
+            //testFindInternational(695);
+            //testgetalldrivers();
+            //GetLocal(1);
+            //GetLocal(561);
+            //Del(36);
+            // Del(534);
+            //TEstFindByApp(52);
+            //TEstFindByApp(65165);
+            //TestFindDriver(1025);
+            //TestFindDriver(10514);
+            //TestAddDriver();
+            //testFindLi(19);
+            //testFindLi(1965);
+            //TestAddLicense();
+            //GEtetst(30,1); //4
+            // GEtetst(30,2); //1
+
+            //IsPassedTest(41, 1); //T
+            //IsPassedTest(39, 1); //T
+            //IsPassedTest(30, 1); //F
+
+
+            //testCountPerson(1063);//1
+            //testCountPerson(1025);//15
+            //testinsert();
+            //testTEst(65);
+            //testTEst(6516);
+            //GEtetst(30);
+            //GEtetst(305616);
+            //testIsActive(70);//0
+            //testIsActive(71); //1
+            //IsPersonHasApplication(1061,1); // No
+            //IsPersonHasApplication(1065,1); // NO
+            //IsPersonHasApplication(1, 1); // Yes
+            //IsPersonHasApplication(1063, 1); // Yes
+
+            //GEtetst(31);
+            //teststatus(43, "complete");  //2
+            //teststatus(45, "New");  //1
+            //DeleteApp(70);
+            //DeleteApp(70654);
+            //UpdateApp(70);
+            //UpdateApp(7054);
+            //testApp(70);
+            //testApp(70564);
+            //testAppoi();
+            //testGetAllStatus();
+            //testFindstaus(1);
+            //testFindstaus(2);
+            //testFindstaus(145);
+            //testF(2);
+            //testF(654165);
+            //testF("Class 1 - Small Motorcycle");
+            //testF("fdkjhskjf");
+            //DeleteClass(30);
+            //DeleteClass(3056);
+            //UpdatClass(30);
+            //UpdatClass(3064);
+            //testFindClass(30);
+            //testFindClass(3046);
+            //testAddL();
+            //testGetLicenseClasses();
+            //testLicenseClasses();
+            //testAdd();
+            //GetApplicationTest();
+            //testFindApp(43);
+            //testFindApp(4356531);
+            //testGetAllPerson();
+            //testAddNew();
+            //testFind(17);
+            //testDelete(102131);
+            //testDelete(1039);
+            //testDelete(1032);
+            //testDelete(1033);
+            //testDelete(1035);
+            //testDelete(1037);
+            //testDelete(1038);
+            //testUpdate(1025);
+
+            //testPrinAllCountris();
+            //Find("Syria");
+            //Find("lfdjkjsdngjlds");
+
+            //GetAllUserstest();
+            //testFind("Msaqer77");
+            //testFind("Ghayath");
+
+            //testDeleteUser(16);
+            //testDeleteUser(1665);
+
+
+            //testAddUser();
+
+            //testUpdateUser(20);
+            //testUpdateUser(205154);
+
+            //Console.WriteLine(clsUserDataBusinessLayar.IsExists(1).ToString());
+            //Console.WriteLine(clsUserDataBusinessLayar.IsExists(15465).ToString());
+
+
+
+            //For get mac address of the interface we use WMI 
+
+
+            //var Mac = NetworkInterface.GetAllNetworkInterfaces()
+            //    .Where(n => n.OperationalStatus == OperationalStatus.Up && n.NetworkInterfaceType != NetworkInterfaceType.Loopback)
+            //    .OrderByDescending(n => n.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
+            //    .Select(n => n.GetPhysicalAddress()).FirstOrDefault();
+
+            //Console.WriteLine(Mac.ToString());
+
+
+
+            //testFindR("340:4:52fa:12:8855");
+            //testFindR("fdgdsgdg");
+
+
+
+            //testAddNewR("0000:0000:0000:0000:0000", 1, false);
+
+            //testUpdate();
+
+            //  var macAddr =
+            //(from nic in NetworkInterface.GetAllNetworkInterfaces()
+            // where nic.OperationalStatus == OperationalStatus.Up
+            // select nic.GetPhysicalAddress().ToString())
+            //.FirstOrDefault();
+
+            //  Console.WriteLine(macAddr);
+
+            //2839266F4F55
+
+            //Test("N1");
+            //Test("N4");
+            //Test("N4kfhs");
+
+            //GetAllApp();
+
+            //GetAllTest();
+
+            // Update(1, clsApplicationTypeBusinessLayar.Find(1).Title, 20.000);
+
+            //FindApp(1);
+            //FindApp(1554);
+
+            //TestFind(1);
+            //TestFind(165);
+
+            //TestUpdate(1, "Vision Test", "This assesses the applicant's visual acuity to ensure they have sufficient vision to drive safely.", 5);
+            //TestUpdate(16165, "Vision Test", "This assesses the applicant's visual acuity to ensure they have sufficient vision to drive safely.", 5);
+
+
+            // TestExists(1);
+            // TestExists(151651);
+            // TestExists(1025);
+
+            Console.ReadKey();
+        }
+    }
+}

@@ -1,0 +1,57 @@
+using DVLDDataAccessLayar;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DVLDBusinessLayar
+{
+    public class clsTestTypesBusinessLayar
+    {
+        public int TestID { get; set; }
+        public string TestTitle {  get; set; }
+        public string TestDescription { get; set; } 
+        public decimal TestFees {  get; set; }
+
+
+        static public DataTable GetAllTestTypes()
+        {
+            return clsTestTypesDataAccessLayar.GetAllTestTypes();
+        }
+        public clsTestTypesBusinessLayar()
+        {
+            this.TestID = 0;
+            this.TestTitle = string.Empty;
+            this.TestDescription = string.Empty;
+            this.TestFees = 0.0m;
+        }
+        private clsTestTypesBusinessLayar(int testid,string  testTitle,string testdececrition,decimal fee)
+        {
+            this.TestID = testid;
+            this.TestTitle = testTitle;
+            this.TestDescription = testdececrition;
+            this.TestFees = fee;
+        }
+
+        static public clsTestTypesBusinessLayar Find(int TestID)
+        {
+            string Title = string.Empty;
+            string Decision = string.Empty;
+            Decimal Fees = 0.0m;
+            if (clsTestTypesDataAccessLayar.Find(TestID, ref Title, ref Decision, ref Fees))
+                return new clsTestTypesBusinessLayar(TestID, Title, Decision, Fees);
+            else
+                return null;
+        }
+
+        static public bool UpdateTestInfo(int TestID,string TestTitle,string TestDescription,decimal TestFees)
+        {
+            int RowAffected=clsTestTypesDataAccessLayar.UpdateTestInfo(TestID, TestTitle, TestDescription, TestFees);
+
+            return RowAffected > 0;
+        }
+
+    }
+}

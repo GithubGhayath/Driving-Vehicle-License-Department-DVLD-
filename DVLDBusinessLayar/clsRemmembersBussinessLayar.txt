@@ -1,0 +1,97 @@
+using DVLDDataAccessLayar;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Mail;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace DVLDBusinessLayar
+{
+    public class clsRemmembersBussinessLayar
+    {
+        enum _enMode { AddNew,Update}
+        private _enMode _Mode { get; set; }
+        public int UserID { get; set; }
+        public int RecoredID { get; set; }
+        public string MacAddress { get; set; }
+        public bool RemmemberMe { get; set; }
+
+
+        private clsRemmembersBussinessLayar(int userid,int recoredid,string macaddress,bool remmemberme)
+        {
+            this.MacAddress = macaddress;
+            this.UserID = userid;
+            this.RemmemberMe = remmemberme;
+            this.RecoredID = recoredid;
+
+            _Mode = _enMode.Update;
+        }
+
+        public clsRemmembersBussinessLayar()
+        {
+            this.MacAddress = string.Empty;
+            this.UserID = 0;
+            this.RemmemberMe = false;
+            this.RecoredID = 0;
+
+            _Mode = _enMode.AddNew;
+        }
+
+        public static clsRemmembersBussinessLayar Find(string MacAddress)
+        {
+            int UserId = 0;
+            int RecoredID = 0;
+            bool RemmemberMe = false;
+
+            if (clsRemmembersDataAccessLayar.Find(MacAddress, ref UserId, ref RemmemberMe, ref RecoredID))
+                return new clsRemmembersBussinessLayar(UserId, RecoredID, MacAddress, RemmemberMe);
+            else
+                return null;
+        }
+
+        private bool _AddNewRecord()
+        {
+            //It will return the number of row affected 
+            RecoredID = clsRemmembersDataAccessLayar.AddNewReconrd(this.MacAddress, this.UserID, this.RemmemberMe);
+
+            return (RecoredID > 0) ? true : false;
+        }
+
+
+        private bool _UpdateRecord()
+        {
+            int RowAffected = clsRemmembersDataAccessLayar.UpdateRecord(this.RemmemberMe, this.RecoredID);
+
+            return (RowAffected > 0) ? true : false;
+        }
+
+        public bool Save()
+        {
+            switch (this._Mode)
+            {
+                case _enMode.AddNew:
+                    {
+                        if(_AddNewRecord())
+                        {
+                            this._Mode = _enMode.Update;
+                            return true;
+                        }
+                        break;
+                    }
+                case _enMode.Update:
+                    {
+                        if(_UpdateRecord())
+                        {
+                            return true; 
+                        }
+                        break;
+                    }
+                
+            }
+            return false;
+        }
+    }
+}

@@ -1,0 +1,116 @@
+using DVLDDataAccessLayar;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Xml.Linq;
+
+namespace DVLDBusinessLayar
+{
+    public class clsLocalDrivingLicenseApplicationsBusinessLayar
+    {
+        /*
+       * 
+--LocalDrivingLicenseApplicationID
+--ApplicationID
+--LicenseClassID
+       */
+
+        static public int CountTestsThatPersonPassed(int PersonID)
+        {
+            return clsLocalDrivingLicenseApplicationsDataAccessLayar.CountTestsThatPersonPassed(PersonID);
+        }
+        public clsLocalDrivingLicenseApplicationsBusinessLayar()
+        {
+
+            this.ApplicationID = 0;
+            this.LicenseClassID = 0;
+            this.LocalDrivingLicenseApplicationID = 0;
+
+            _Mode = _enMode.AddNew;
+        }
+        private clsLocalDrivingLicenseApplicationsBusinessLayar(int LocalDrivingLicenseApplicationID,int ApplicationID,int LicenseClassID)
+        {
+            this.ApplicationID = ApplicationID;
+            this.LicenseClassID = LicenseClassID;
+            this.LocalDrivingLicenseApplicationID = LocalDrivingLicenseApplicationID;
+
+            _Mode = _enMode.Update;
+        }
+
+        enum _enMode { AddNew, Update}
+        private _enMode _Mode { get; set; }
+        public int LocalDrivingLicenseApplicationID { get; set; }
+        public int ApplicationID {  get; set; }
+        public int LicenseClassID {  get; set; }
+
+        static public clsLocalDrivingLicenseApplicationsBusinessLayar Find(int LocalDrivingLicenseApplicationID)
+        {
+            int AppID = 0;
+            int ClassID = 0;
+            if (clsLocalDrivingLicenseApplicationsDataAccessLayar.Find(LocalDrivingLicenseApplicationID, ref AppID, ref ClassID))
+                return new clsLocalDrivingLicenseApplicationsBusinessLayar(LocalDrivingLicenseApplicationID, AppID, ClassID);
+            else
+                return null;
+        }
+
+        static public bool Delete(int LocalDrivingLicenseApplicationID)
+        {
+            return clsLocalDrivingLicenseApplicationsDataAccessLayar.Delete(LocalDrivingLicenseApplicationID);
+        }
+
+        static public DataTable GetAllLocalDrivingLicenseApplications()
+        {
+            return clsLocalDrivingLicenseApplicationsDataAccessLayar.GetAllLocalDrivingLicenseApplications();
+        }
+
+        private bool _AddNew()
+        {
+            int RowID = clsLocalDrivingLicenseApplicationsDataAccessLayar.AddNewLocalDrivingLicenseApplication(this.ApplicationID, this.LicenseClassID);
+
+            if(RowID>0)
+            {
+                this.LocalDrivingLicenseApplicationID = RowID;
+                return true;
+            }
+            else
+                return false;
+        }
+        private bool _Update()
+        {
+            if (clsLocalDrivingLicenseApplicationsDataAccessLayar.Update(this.LocalDrivingLicenseApplicationID, this.ApplicationID, this.LicenseClassID))
+                return true;
+            else
+                return false;
+        }
+
+
+        public bool Save()
+        {
+            switch(this._Mode)
+            {
+                case _enMode.AddNew:
+                    if (_AddNew())
+                    {
+                        this._Mode = _enMode.Update;
+                        return true;
+                    }
+                    else
+                        return false;
+
+                case _enMode.Update:
+                    if (_Update()) 
+                    {
+                        return true;
+                    }
+                    else
+                        return false;
+            }
+
+            return false;
+        }
+
+    }
+}

@@ -1,0 +1,144 @@
+using DVLDDataAccessLayar;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DVLDBusinessLayar
+{
+    public class clsApplicationsBusinessLayar
+    {
+        /*
+            * 
+
+                   ApplicationID                 int
+                   ApplicantPersonID        int
+                   ApplicationDate            datetime
+                   ApplicationTypeID         int
+                   ApplicationStatus          int
+                   LastStatusDate          datetime
+                   PaidFees             decimal
+                   CreatedByUserID         int
+            */
+
+
+        static public bool IsClientHasANewApplicationToAComplitApplication(int PersonID,int ApplicationTypeID)
+        {
+            if (clsApplicationsDataAccessLayar.IsPersonHasApplicationNewOrComplit(PersonID,ApplicationTypeID) > 0)
+                return true;
+            else
+                return false;
+        }
+
+        public clsApplicationsBusinessLayar()
+        {
+            this.ApplicationID = 0;
+            this.ApplicantPersonID = 0;
+            this.ApplicationDate = DateTime.Now;
+            this.ApplicationTypeID = 0;
+            this.ApplicationStatus = 0;
+            this.LastStatusDate = DateTime.Now;
+            this.PaidFees = .0m;
+            this.CreatedByUserID = 0;
+
+            this._Mode = _enMode.AddNew;
+        }
+        private clsApplicationsBusinessLayar(int ApplicationID,
+                 int ApplicantPersonID,
+                 DateTime ApplicationDate,
+                 int ApplicationTypeID,
+                 byte ApplicationStatus,
+                 DateTime LastStatusDate,
+                 Decimal PaidFees,
+                 int CreatedByUserID)
+        {
+            this.ApplicationID = ApplicationID;
+            this.ApplicantPersonID = ApplicantPersonID;
+            this.ApplicationDate = ApplicationDate;
+            this.ApplicationTypeID = ApplicationTypeID;
+            this.ApplicationStatus = ApplicationStatus;
+            this.LastStatusDate = LastStatusDate;
+            this.PaidFees = PaidFees;
+            this.CreatedByUserID = CreatedByUserID;
+
+            this._Mode = _enMode.Update;
+        }
+
+        enum _enMode { AddNew,Update}
+        private _enMode _Mode { get; set; }
+        public int ApplicationID {  get; set; }
+        public int ApplicantPersonID {  get; set; }
+        public DateTime ApplicationDate {  get; set; }
+        public int ApplicationTypeID { get; set; }
+        public byte ApplicationStatus {  get; set; }
+        public DateTime LastStatusDate { get; set; }
+        public decimal PaidFees {  get; set; }
+        public int CreatedByUserID {  get; set; }
+
+        static public DataTable GetAllApplications()
+        {
+            return clsApplicationsDataAccessLayar.GetAllApplications();
+        }
+
+        static public clsApplicationsBusinessLayar Find(int ApplicationID)
+        {
+            int ApplicantPersonID = 0;
+            DateTime ApplicationDate = DateTime.Now;
+            int ApplicationTypeID = 0;
+            byte ApplicationStatus = 0;
+            DateTime LastStatusDate=DateTime.Now;
+            Decimal PaidFees = .0m;
+            int CreatedByUserID = 0;
+            if (clsApplicationsDataAccessLayar.Find(ApplicationID, ref ApplicantPersonID, ref ApplicationDate, ref ApplicationTypeID, ref ApplicationStatus, ref LastStatusDate, ref PaidFees, ref CreatedByUserID))
+                return new clsApplicationsBusinessLayar(ApplicationID, ApplicantPersonID, ApplicationDate, ApplicationTypeID, ApplicationStatus, LastStatusDate, PaidFees, CreatedByUserID);
+            else
+                return null;
+
+
+        }
+
+        static public bool UpdateApplicationStatus(int ApplicationID,string NewStatus)
+        {
+            return (clsApplicationsDataAccessLayar.UpdateApplicationStatus(ApplicationID, NewStatus) > 0);
+        }
+
+        private bool _AddNew()
+        {
+            int RowAffected = clsApplicationsDataAccessLayar.AddNewApplication(this.ApplicantPersonID, this.ApplicationDate, this.ApplicationTypeID,
+                this.ApplicationStatus, this.LastStatusDate, this.PaidFees, this.CreatedByUserID);
+
+            if(RowAffected > 0 )
+            {
+                this.ApplicationID = RowAffected;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+
+
+        static public bool Delete(int ApplicationID)
+        {
+            return clsApplicationsDataAccessLayar.DeleteApplication(ApplicationID);
+        }
+       
+        public bool Save()
+        {
+            switch(this._Mode)
+            {
+                case _enMode.AddNew:
+                    if (_AddNew())
+                        return true;
+                    else
+                        return false;
+
+            }
+            return false;
+        }
+    }
+}

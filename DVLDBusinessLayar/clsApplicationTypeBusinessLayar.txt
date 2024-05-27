@@ -1,0 +1,55 @@
+using DVLDDataAccessLayar;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DVLDBusinessLayar
+{
+    public class clsApplicationTypeBusinessLayar
+    {
+        public int AppId {  get; set; }
+
+        public string Title {  get; set; }
+        public Decimal Fees { get; set; }
+        private clsApplicationTypeBusinessLayar(int id,string title, Decimal fee)
+        {
+            this.AppId = id;
+            this.Title = title;
+            this.Fees = fee;
+        }
+        public clsApplicationTypeBusinessLayar()
+        {
+            AppId = 0;
+            Title = string.Empty;
+            Fees = 0.0m;
+        }
+
+        static public DataTable GetAllApplicationType()
+        {
+            return clsApplicationTypeDataAccessLayar.GetAllApplicationType();
+        }
+
+        static public bool UpdateAnApplication(int AppID,string Title, Decimal fee)
+        {
+            return clsApplicationTypeDataAccessLayar.UpdateApplicationType(AppID, Title, fee);
+        }
+
+
+        static public clsApplicationTypeBusinessLayar Find(int AppID) 
+        {
+            string title = string.Empty;
+            Decimal fee = 0.0m;
+
+            if (clsApplicationTypeDataAccessLayar.Find(AppID, ref title, ref fee))
+            {
+                return new clsApplicationTypeBusinessLayar(AppID, title, fee);
+            }
+            else
+                return null;
+        }
+    }
+}

@@ -1,0 +1,148 @@
+using DVLDDataAccessLayar;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
+
+namespace DVLDBusinessLayar
+{
+    public class clsLicensesBusinessLayar
+    {
+        enum enMode { Addnew, update }
+        private enMode _Mode {get;set;}
+        public int ApplicationID { get; set; }
+        public int DriverID { get; set; }
+        public int LicenseClass { get; set; }
+        public DateTime IssueDate { get; set; }
+        public DateTime ExpirationDate { get; set; }
+        public string Notes { get; set; }
+        public decimal PaidFees { get; set; }
+        public bool IsActive { get; set; }
+        public byte IssueReason { get; set; }
+        public int CreatedByUserID { get; set; }
+        public int LicenseID {  get; set; }
+
+        public clsLicensesBusinessLayar()
+        {
+            this.LicenseID = 0;
+            this.ApplicationID= 0;
+            this.DriverID= 0;
+            this.LicenseClass= 0;
+            this.IssueDate= DateTime.Now;
+            this.ExpirationDate= DateTime.Now;
+            this.Notes = string.Empty;
+            this.PaidFees = .0m;
+            this.IsActive = false;
+            this.IssueReason = 0;
+            this.CreatedByUserID= 0;
+
+            this._Mode = enMode.Addnew;
+        }
+
+        private clsLicensesBusinessLayar(int LicenseID, int ApplicationID, int DriverID, int LicenseClass, DateTime IssueDate, DateTime ExpirationDate, string Notes, decimal PaidFees, bool IsActive, byte IssueReason, int CreatedByUserID)
+        {
+            this.LicenseID = LicenseID;
+            this.ApplicationID = ApplicationID;
+            this.DriverID = DriverID;
+            this.LicenseClass = LicenseClass;
+            this.IssueDate = IssueDate;
+            this.ExpirationDate = ExpirationDate;
+            this.Notes = Notes;
+            this.PaidFees = PaidFees;
+            this.IsActive = IsActive;
+            this.IssueReason = IssueReason;
+            this.CreatedByUserID = CreatedByUserID;
+            this._Mode = enMode.update;
+        }
+
+        static public bool IsLicenseActive(int LicenseID)
+        {
+            return clsLicensesDataAccessLayar.IsLicenseActive(LicenseID);
+        }
+        private bool _AddNewLicense()
+        {
+            this.LicenseID = clsLicensesDataAccessLayar.AddNewLicense(this.ApplicationID, this.DriverID, this.LicenseClass, this.IssueDate, this.ExpirationDate, this.Notes, this.PaidFees, this.IsActive, this.IssueReason, this.CreatedByUserID);
+
+            return (this.LicenseID > 0);
+
+        }
+
+        public static clsLicensesBusinessLayar Find(int LicenseID)
+        {
+
+            int ApplicationID = 0;
+            int DriverID = 0;
+            int LicenseClass = 0;
+            DateTime IssueDate = DateTime.Now;
+            DateTime ExpirationDate = DateTime.Now;
+            string Notes = string.Empty;
+            decimal PaidFees = .0m;
+            bool IsActive = false;
+            byte IssueReason = 0;
+            int CreatedByUserID = 0;
+
+            if (clsLicensesDataAccessLayar.Find(LicenseID, ref ApplicationID, ref DriverID, ref LicenseClass, ref IssueDate, ref ExpirationDate, ref Notes, ref PaidFees, ref IsActive, ref IssueReason, ref CreatedByUserID))
+            {
+                return new clsLicensesBusinessLayar(LicenseID, ApplicationID, DriverID, LicenseClass, IssueDate, ExpirationDate, Notes, PaidFees, IsActive, IssueReason, CreatedByUserID);
+            }
+            else
+                return null;
+        }
+
+        public static clsLicensesBusinessLayar FindByApplicationID(int ApplicationID)
+        {
+            int LicenseID = 0;
+        
+            int DriverID = 0;
+            int LicenseClass = 0;
+            DateTime IssueDate = DateTime.Now;
+            DateTime ExpirationDate = DateTime.Now;
+            string Notes = string.Empty;
+            decimal PaidFees = .0m;
+            bool IsActive = false;
+            byte IssueReason = 0;
+            int CreatedByUserID = 0;
+
+            if (clsLicensesDataAccessLayar.Find(ref LicenseID,  ApplicationID, ref DriverID, ref LicenseClass, ref IssueDate, ref ExpirationDate, ref Notes, ref PaidFees, ref IsActive, ref IssueReason, ref CreatedByUserID))
+            {
+                return new clsLicensesBusinessLayar(LicenseID, ApplicationID, DriverID, LicenseClass, IssueDate, ExpirationDate, Notes, PaidFees, IsActive, IssueReason, CreatedByUserID);
+            }
+            else
+                return null;
+        }
+
+        public bool Save()
+        {
+            switch(this._Mode)
+            {
+                case enMode.Addnew:
+                    if (_AddNewLicense())
+                        return true;
+                    else
+                        return false;
+
+            }
+            return false;
+        }
+
+        static public DataTable GetAllLocalLicenses(int PersonID)
+        {
+            return clsLicensesDataAccessLayar.GetAllLocalLicenses(PersonID);
+        }
+
+        static public bool IsTheLicenseExpired(int LicenseID)
+        {
+            return clsLicensesDataAccessLayar.IsTheLicenseExpired(LicenseID);
+        }
+
+
+        static public bool UpdateLicenseActivation(int LicenseID, bool IsActive)
+        {
+            return clsLicensesDataAccessLayar.UpdateLicenseActivation(LicenseID, IsActive);
+        }
+    }
+}

@@ -1,0 +1,250 @@
+using DVLDataAccessLayar;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
+
+namespace DVLDDataAccessLayar
+{
+    public class clsApplicationsDataAccessLayar
+    {
+        /*
+         * 
+
+                ApplicationID
+                ApplicantPersonID
+                ApplicationDate
+                ApplicationTypeID
+                ApplicationStatus
+                LastStatusDate
+                PaidFees
+                CreatedByUserID
+         */
+
+        static public int IsPersonHasApplicationNewOrComplit(int PersonID,int ApplicationTypeID)
+        {
+            int RowAffected = -1;
+
+            SqlConnection connection=new SqlConnection(clsDataAccessSittings.ConnectionString);
+
+            string Quert = @"SELECT        Count(*)
+                            FROM            Applications INNER JOIN
+                                                     ApplicationsStatus ON Applications.ApplicationStatus = ApplicationsStatus.StatusID
+                            						 
+                            where (ApplicantPersonID = @PersonID and ApplicationStatus in (1,2,3)and ApplicationTypeID = @ApplicationTypeID)";
+
+            SqlCommand command = new SqlCommand(Quert, connection);
+            command.Parameters.AddWithValue("@PersonID", PersonID);
+            command.Parameters.AddWithValue("@ApplicationTypeID", ApplicationTypeID);
+
+            try
+            {
+                connection.Open();
+
+                object Rows = command.ExecuteScalar();
+
+                if (int.TryParse(Rows.ToString(), out int Row))
+                    RowAffected = Row;
+            }
+            catch(Exception ex) { }
+            finally { connection.Close(); }
+
+            return RowAffected;
+        }
+        static public int UpdateApplicationStatus(int ApplicationID,string ApplicationStatus)
+        {
+            int RowAffected = -1;
+            int ApplicationStatusAsNumber = -1;
+
+            SqlConnection connection=new SqlConnection(clsDataAccessSittings.ConnectionString);
+
+            if(ApplicationStatus.Trim()== "New")
+            {
+                ApplicationStatusAsNumber = 1;
+            }
+            else if(ApplicationStatus.Trim()== "complete")
+            {
+                ApplicationStatusAsNumber = 2;
+                
+            }
+            else if(ApplicationStatus.Trim() == "Pending")
+            {
+
+                ApplicationStatusAsNumber = 3;
+            }    
+            else
+            {
+                ApplicationStatusAsNumber = 4;
+
+            }
+
+
+            string Query = @"
+                                            UPDATE Applications 
+                                            SET ApplicationStatus=@ApplicationStatusAsNumber
+                                            WHERE ApplicationID=@ApplicationID";
+
+            SqlCommand command= new SqlCommand(Query, connection);
+
+            command.Parameters.AddWithValue("@ApplicationStatusAsNumber", ApplicationStatusAsNumber);
+            command.Parameters.AddWithValue("@ApplicationID", ApplicationID);
+
+            try
+            {
+                connection.Open();
+
+                RowAffected = command.ExecuteNonQuery();
+            }
+            catch(Exception ex) { }
+            finally { connection.Close(); }
+
+            return RowAffected;
+        }
+        static public DataTable GetAllApplications()
+        {
+            DataTable Applications=new DataTable();
+            SqlConnection connection = new SqlConnection(clsDataAccessSittings.ConnectionString);
+
+            string Query = "SELECT *FROM Applications";
+
+            SqlCommand command=new SqlCommand(Query, connection);   
+
+            try
+            {
+                connection.Open();
+
+                SqlDataReader reader = command.ExecuteReader();
+
+                if (reader.HasRows)
+                    Applications.Load(reader);
+
+            }
+            catch (Exception ex) { }
+            finally { connection.Close(); }
+            return Applications;
+        }
+
+        static public bool Find(int ApplicationID,
+                ref int ApplicantPersonID,
+                ref DateTime ApplicationDate,
+                ref int ApplicationTypeID,
+                ref byte ApplicationStatus,
+                ref  DateTime LastStatusDate,
+                ref Decimal PaidFees,
+                ref int CreatedByUserID)
+        {
+            bool IsFound = false;
+
+            SqlConnection connection = new SqlConnection(clsDataAccessSittings.ConnectionString);
+            string Query = "SELECT *FROM Applications WHERE ApplicationID=@ApplicationID";
+            SqlCommand command = new SqlCommand(Query, connection);
+            command.Parameters.AddWithValue("@ApplicationID", ApplicationID);
+           
+            try
+            {
+                connection.Open();
+
+                SqlDataReader reader = command.ExecuteReader();
+                while(reader.Read())
+                {
+                    IsFound = true;
+                    ApplicationID = (int)reader["ApplicationID"];
+                    ApplicantPersonID = (int)reader["ApplicantPersonID"];
+                    ApplicationDate = (DateTime)reader["ApplicationDate"];
+                    ApplicationTypeID = (int)reader["ApplicationTypeID"];
+                    ApplicationStatus = (byte)reader["ApplicationStatus"];
+                    LastStatusDate = (DateTime)reader["LastStatusDate"];
+                    PaidFees = (decimal)reader["PaidFees"];
+                    CreatedByUserID = (int)reader["CreatedByUserID"];
+                }
+
+                reader.Close();
+            }catch(Exception ex) { }
+            finally { connection.Close(); }
+            return IsFound;
+
+
+        }
+
+        static public int AddNewApplication( int ApplicantPersonID,
+                 DateTime ApplicationDate,
+                 int ApplicationTypeID,
+                 int ApplicationStatus,
+                 DateTime LastStatusDate,
+                 Decimal PaidFees,
+                 int CreatedByUserID)
+        {
+            int RowAffected = -1;
+
+            SqlConnection connection = new SqlConnection(clsDataAccessSittings.ConnectionString);
+
+            string Query = @"INSERT INTO Applications
+                             VALUES
+           (@ApplicantPersonID
+           ,@ApplicationDate
+           ,@ApplicationTypeID
+           ,@ApplicationStatus 
+           ,@LastStatusDate
+           ,@PaidFees
+           ,@CreatedByUserID);SELECT SCOPE_IDENTITY()";
+
+            SqlCommand command=new SqlCommand(Query, connection);
+            command.Parameters.AddWithValue("@ApplicantPersonID", ApplicantPersonID);
+            command.Parameters.AddWithValue("@ApplicationDate", ApplicationDate);
+            command.Parameters.AddWithValue("@ApplicationTypeID", ApplicationTypeID);
+            command.Parameters.AddWithValue("@ApplicationStatus", ApplicationStatus);
+            command.Parameters.AddWithValue("@LastStatusDate", LastStatusDate);
+            command.Parameters.AddWithValue("@PaidFees", PaidFees);
+            command.Parameters.AddWithValue("@CreatedByUserID", CreatedByUserID);
+
+            try
+            {
+                connection.Open();
+
+                Object oRowAffected = command.ExecuteScalar();
+
+                if(int.TryParse(oRowAffected.ToString(),out int RF ))
+                {
+                    
+                    RowAffected = RF;
+                }
+            }
+            catch(Exception ex) { }
+            finally { connection.Close(); }
+
+            return RowAffected;
+        }
+
+        static public bool DeleteApplication(int ApplicationID)
+        {
+            int RowAffected = -1;
+
+            SqlConnection connection = new SqlConnection(clsDataAccessSittings.ConnectionString);
+
+            string Query = "DELETE FROM Applications WHERE ApplicationID=@ApplicationID";
+
+            SqlCommand command=new SqlCommand(Query, connection);
+
+            command.Parameters.AddWithValue("@ApplicationID", ApplicationID);
+            
+            try
+            {
+                connection.Open();
+
+                RowAffected = command.ExecuteNonQuery();
+            }
+            catch(Exception ex) { }
+            finally { connection.Close(); }
+
+
+            return RowAffected > 0;
+        }
+
+     
+    }
+}
