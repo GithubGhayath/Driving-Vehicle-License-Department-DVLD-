@@ -1,7 +1,7 @@
 # Driving-Vehicle-License-Department-DVLD-
 
 
-###Installation
+### Installation
 Locate the "DVLD.bak" file in the "Database" folder and restore it to your preferred DBMS.
 Download the project from the repository.
 Extract the downloaded files to your computer and Run the Project.
